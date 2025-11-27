@@ -1,42 +1,72 @@
-// 1) PEGÁ ACÁ TU URL CSV DE GOOGLE SHEETS ENTRE COMILLAS
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVLJlmIuXeGi6GMKw63DzQL97qzgtQoD-agtpEc-H_IoTPsxuEFLpjPVA-XoRbpx-G8_vKtXdy1dcl/pub?gid=0&single=true&output=csv";
+/* ------------------------------------------------------------------
+   CONFIGURACIÓN – URL de Google Sheets
+-------------------------------------------------------------------*/
+const CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVLJlmIuXeGi6GMKw63DzQL97qzgtQoD-agtpEc-H_IoTPsxuEFLpjPVA-XoRbpx-G8_vKtXdy1dcl/pub?gid=0&single=true&output=csv";
 
-// Cuando la página termine de cargar...
+/* ------------------------------------------------------------------
+   MAPA DE IMÁGENES PARA PROMOS
+   (el nombre debe coincidir EXACTO con la columna PRODUCTO)
+-------------------------------------------------------------------*/
+const IMAGENES_PROMO = {
+  "2 quilmes 1lt": "img/QUILMES 1LTPNG.png",
+};
+
+
+/* ------------------------------------------------------------------
+   INICIO
+-------------------------------------------------------------------*/
 document.addEventListener("DOMContentLoaded", () => {
   const categoriasCont = document.getElementById("menu-categorias");
-  if (!categoriasCont) return; // si estamos en index.html, no hace nada
-
   const btnPromos = document.getElementById("btn-promos");
   const popup = document.getElementById("popup-promos");
   const popupCerrar = document.getElementById("popup-cerrar");
   const popupDetalle = document.getElementById("popup-detalle");
   const bloquePromosResumen = document.querySelector(".bloque-promos-resumen");
 
-  // Pedimos el CSV al Google Sheets
+  // Si estamos en index.html → no cargar menú
+  if (!categoriasCont) return;
+
   fetch(CSV_URL)
-    .then(res => res.text())
-    .then(text => {
+    .then((res) => res.text())
+    .then((text) => {
       const { categorias, promos } = procesarCSV(text);
       renderCategorias(categorias, categoriasCont);
-      manejarPromos(promos, btnPromos, popup, popupDetalle, bloquePromosResumen);
+
+      manejarPromos(
+        promos,
+        btnPromos,
+        popup,
+        popupDetalle,
+        bloquePromosResumen
+      );
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Error cargando menú:", err);
-      categoriasCont.innerHTML = "<p>No se pudo cargar el menú. Intente más tarde.</p>";
+      categoriasCont.innerHTML =
+        "<p>No se pudo cargar el menú. Intente más tarde.</p>";
     });
 
   // Cerrar popup
   if (popupCerrar && popup) {
     popupCerrar.addEventListener("click", () => {
-      popup.style.display = "none";
+      popup.style.opacity = 0;
+      setTimeout(() => (popup.style.display = "none"), 300);
     });
-    popup.addEventListener("click", e => {
-      if (e.target === popup) popup.style.display = "none";
+
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) {
+        popup.style.opacity = 0;
+        setTimeout(() => (popup.style.display = "none"), 300);
+      }
     });
   }
 });
 
-// 2) Función para convertir el CSV en filas/columnas
+
+/* ------------------------------------------------------------------
+   CSV → MATRIZ
+-------------------------------------------------------------------*/
 function parseCSV(text) {
   const rows = [];
   let currentRow = [];
@@ -48,7 +78,6 @@ function parseCSV(text) {
     const nextChar = text[i + 1];
 
     if (char === '"' && inQuotes && nextChar === '"') {
-      // Doble comilla dentro de campo
       currentField += '"';
       i++;
     } else if (char === '"') {
@@ -76,10 +105,13 @@ function parseCSV(text) {
   return rows;
 }
 
-// 3) Procesar texto CSV y agrupar por categoría
+
+/* ------------------------------------------------------------------
+   PROCESAR CSV
+-------------------------------------------------------------------*/
 function procesarCSV(csvText) {
   const lineas = parseCSV(csvText);
-  const encabezados = lineas[0].map(h => h.trim());
+  const encabezados = lineas[0].map((h) => h.trim());
 
   const idxCat = encabezados.indexOf("Categoría");
   const idxSub = encabezados.indexOf("Subcategoría");
@@ -101,62 +133,55 @@ function procesarCSV(csvText) {
     const activo = (cols[idxActivo] || "").trim().toLowerCase();
     if (activo !== "sí" && activo !== "si") continue;
 
-    const categoria = (cols[idxCat] || "").trim() || "Otros";
-    const subcategoria = (cols[idxSub] || "").trim();
-    const producto = (cols[idxProd] || "").trim();
-    const descripcion = (cols[idxDesc] || "").trim();
-    const precio = (cols[idxPrecio] || "").trim();
-    const orden = parseInt((cols[idxOrden] || "0").trim(), 10) || 0;
-    const promo = (cols[idxPromo] || "").trim().toLowerCase();
-    const precioPromo = (cols[idxPrecioPromo] || "").trim();
-
     const item = {
-      categoria,
-      subcategoria,
-      producto,
-      descripcion,
-      precio,
-      orden,
-      promo: promo === "sí" || promo === "si",
-      precioPromo
+      categoria: (cols[idxCat] || "").trim() || "Otros",
+      subcategoria: (cols[idxSub] || "").trim(),
+      producto: (cols[idxProd] || "").trim(),
+      descripcion: (cols[idxDesc] || "").trim(),
+      precio: (cols[idxPrecio] || "").trim(),
+      orden: parseInt((cols[idxOrden] || "0").trim(), 10) || 0,
+      promo:
+        (cols[idxPromo] || "").trim().toLowerCase() === "sí" ||
+        (cols[idxPromo] || "").trim().toLowerCase() === "si",
+      precioPromo: (cols[idxPrecioPromo] || "").trim(),
     };
 
-    if (!categorias[categoria]) categorias[categoria] = [];
-    categorias[categoria].push(item);
+    if (!categorias[item.categoria]) categorias[item.categoria] = [];
+    categorias[item.categoria].push(item);
 
-    if (item.promo) {
-      promos.push(item);
-    }
+    if (item.promo) promos.push(item);
   }
 
-  // Ordenamos por orden dentro de cada categoría
-  Object.keys(categorias).forEach(cat => {
-    categorias[cat].sort((a, b) => a.orden - b.orden);
-  });
+  Object.keys(categorias).forEach((c) =>
+    categorias[c].sort((a, b) => a.orden - b.orden)
+  );
 
   return { categorias, promos };
 }
 
-// 4) Pintar categorías y productos en la página
+
+/* ------------------------------------------------------------------
+   RENDERIZAR CATEGORÍAS
+-------------------------------------------------------------------*/
 function renderCategorias(categorias, contenedor) {
   const iconos = {
     "Entradas / Picadas": "🥟",
     "Sandwiches / Calientes": "🥪",
-    "Pizzas": "🍕",
-    "Ensaladas": "🥗",
-    "Postres": "🍰",
-    "Acompañamientos": "🍟",
-    "Carnes": "🍖",
+    Pizzas: "🍕",
+    Ensaladas: "🥗",
+    Postres: "🍰",
+    Acompañamientos: "🍟",
+    Carnes: "🍖",
     "Sin Alcohol": "🥤",
-    "Vinos": "🍷",
-    "Cervezas": "🍺",
-    "Aperitivos": "🍸",
-    "Varios": "⭐"
+    Vinos: "🍷",
+    Cervezas: "🍺",
+    Aperitivos: "🍸",
+    Varios: "⭐",
   };
 
   contenedor.innerHTML = "";
 
-  Object.keys(categorias).forEach(catNombre => {
+  Object.keys(categorias).forEach((catNombre) => {
     const items = categorias[catNombre];
 
     const catDiv = document.createElement("article");
@@ -183,7 +208,7 @@ function renderCategorias(categorias, contenedor) {
     const contenido = document.createElement("div");
     contenido.className = "categoria-contenido";
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const itemDiv = document.createElement("div");
       itemDiv.className = "item-producto";
 
@@ -198,18 +223,10 @@ function renderCategorias(categorias, contenedor) {
       precioSpan.className = "item-precios";
 
       if (item.promo && item.precioPromo) {
-        const normalTachado = document.createElement("span");
-        normalTachado.style.textDecoration = "line-through";
-        normalTachado.style.marginRight = "0.3rem";
-        normalTachado.textContent = item.precio ? `$${item.precio}` : "";
-
-        const promoSpan = document.createElement("span");
-        promoSpan.style.color = "#c00000";
-        promoSpan.style.fontWeight = "bold";
-        promoSpan.textContent = `$${item.precioPromo}`;
-
-        precioSpan.appendChild(normalTachado);
-        precioSpan.appendChild(promoSpan);
+        precioSpan.innerHTML = `
+          <span style="text-decoration:line-through;margin-right:0.3rem;">$${item.precio}</span>
+          <span style="color:#c00000;font-weight:bold;">$${item.precioPromo}</span>
+        `;
       } else {
         precioSpan.textContent = item.precio ? `$${item.precio}` : "";
       }
@@ -228,14 +245,15 @@ function renderCategorias(categorias, contenedor) {
       contenido.appendChild(itemDiv);
     });
 
-    // Comportamiento de accordion (abre/cierra)
     header.addEventListener("click", () => {
-      const activa = contenido.classList.contains("activa");
-      document.querySelectorAll(".categoria-contenido").forEach(c => {
+      const abierto = contenido.classList.contains("activa");
+
+      document.querySelectorAll(".categoria-contenido").forEach((c) => {
         c.classList.remove("activa");
         c.style.maxHeight = null;
       });
-      if (!activa) {
+
+      if (!abierto) {
         contenido.classList.add("activa");
         contenido.style.maxHeight = contenido.scrollHeight + "px";
       }
@@ -247,16 +265,27 @@ function renderCategorias(categorias, contenedor) {
   });
 }
 
-// 5) Manejo de promos (resumen + popup)
-function manejarPromos(promos, btnPromos, popup, popupDetalle, bloquePromosResumen) {
+
+/* ------------------------------------------------------------------
+   MANEJO PROMOS + POPUP CON IMÁGENES
+-------------------------------------------------------------------*/
+function manejarPromos(
+  promos,
+  btnPromos,
+  popup,
+  popupDetalle,
+  bloquePromosResumen
+) {
   if (!promos || promos.length === 0) {
     if (btnPromos) btnPromos.style.display = "none";
-    if (bloquePromosResumen) bloquePromosResumen.innerHTML = "";
     return;
   }
 
   const primera = promos[0];
+  const nombreKey = primera.producto.trim().toLowerCase();
+  const imgPromo = IMAGENES_PROMO[nombreKey];
 
+  // Resumen superior
   if (bloquePromosResumen) {
     bloquePromosResumen.innerHTML = `
       <div class="tarjeta-promo-mini">
@@ -266,28 +295,38 @@ function manejarPromos(promos, btnPromos, popup, popupDetalle, bloquePromosResum
     `;
   }
 
+  // Botón
   if (btnPromos) {
     btnPromos.style.display = "block";
-    btnPromos.addEventListener("click", () => mostrarPopupPromo(primera, popup, popupDetalle));
+    btnPromos.addEventListener("click", () =>
+      mostrarPopupPromo(primera, imgPromo, popup, popupDetalle)
+    );
   }
 
-  // mostrar automaticamente al entrar
+  // Mostrar automáticamente al entrar
   setTimeout(() => {
-    mostrarPopupPromo(primera, popup, popupDetalle);
+    mostrarPopupPromo(primera, imgPromo, popup, popupDetalle);
   }, 800);
 }
 
-function mostrarPopupPromo(item, popup, popupDetalle) {
+function mostrarPopupPromo(item, imgPromo, popup, popupDetalle) {
   if (!popup || !popupDetalle) return;
+
   popupDetalle.innerHTML = `
-    <p><strong>${item.producto}</strong></p>
+    ${imgPromo ? `<img src="${imgPromo}" class="promo-img-popup">` : ""}
+    <h3>${item.producto}</h3>
     ${item.descripcion ? `<p>${item.descripcion}</p>` : ""}
     ${
       item.precioPromo
-        ? `<p><span style="text-decoration:line-through;margin-right:0.3rem;">${item.precio ? "$" + item.precio : ""}</span>
-           <span style="color:#c00000;font-weight:bold;">$${item.precioPromo}</span></p>`
+        ? `<p>
+             <span style="text-decoration:line-through;margin-right:0.3rem;">$${item.precio}</span>
+             <span style="color:#c00000;font-weight:bold;">$${item.precioPromo}</span>
+           </p>`
         : ""
     }
   `;
+
   popup.style.display = "flex";
+  popup.style.opacity = 1;
 }
+
