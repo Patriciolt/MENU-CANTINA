@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Menú - Cantina ADPUT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+
+<body class="fondo-rustico">
+
+  <div class="overlay-rustico"></div>
+
+  <!-- Encabezado SOLO LOGO -->
+  <header class="header-menu">
+    <img src="img/logo.png" class="logo-menu" alt="Logo Cantina ADPUT" />
+  </header>
+
+  <main class="contenedor-menu">
+
+    <!-- Bloque de promos -->
+    <section id="promos" class="bloque-promos-resumen"></section>
+
+    <!-- Categorías cargadas dinámicamente -->
+    <section id="menu-categorias" class="lista-categorias"></section>
+
+  </main>
+
+  <!-- Botón flotante -->
+  <button id="btn-promos" class="btn-flotante" style="display:none;">
+    🔔 Promos
+  </button>
+
+  <!-- Popup -->
+  <div id="popup-promos" class="popup-oscuro" style="display:none;">
+    <div class="popup-contenido">
+      <button id="popup-cerrar" class="popup-cerrar">✕</button>
+      <h2 class="popup-titulo">Promociones</h2>
+      <div id="popup-detalle"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
