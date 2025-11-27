@@ -5,13 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Promociones - Cantina ADPUT</title>
   <link rel="stylesheet" href="estilos.css">
+  <style>
+    .promo-tarjeta {
+      background: rgba(255, 245, 230, 0.9);
+      border: 2px solid #b33;
+      padding: 1.2rem;
+      margin: 1.5rem auto;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      text-align: center;
+      animation: rusticFade 0.7s ease-out forwards;
+    }
+
+    .promo-tarjeta img {
+      width: 140px;
+      display: block;
+      margin: 0.5rem auto;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25));
+    }
+
+    @keyframes rusticFade {
+      from { opacity: 0; transform: scale(0.95) rotate(-1deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0); }
+    }
+  </style>
 </head>
 
 <body class="fondo-rustico">
 
   <div class="overlay-rustico"></div>
 
-  <!-- Header solo logo -->
   <header class="header-menu">
     <img src="img/logo.png" class="logo-menu" alt="Logo Cantina ADPUT">
   </header>
@@ -20,7 +45,7 @@
     <h2 class="titulo-promos">Promociones</h2>
 
     <div id="lista-promos" class="lista-promos">
-      <!-- Aquí se cargan las promos desde script.js -->
+      <!-- El script insertará aquí las tarjetas -->
     </div>
 
     <a href="index.html" class="btn-volver">Volver al inicio</a>
@@ -29,3 +54,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
