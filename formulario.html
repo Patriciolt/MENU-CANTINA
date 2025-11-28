@@ -128,4 +128,44 @@
 
       // HABILITAR / DESHABILITAR BOTÓN
       const btn = document.getElementById("btnEnviar");
-      if (campos.nombre && campos.evento && campos.personas && campos.
+      if (campos.nombre && campos.evento && campos.personas && campos.fecha && campos.horario) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function marcarError(campo, mensajeId, texto) {
+      campo.classList.remove("campo-ok");
+      campo.classList.add("campo-error");
+      document.getElementById(mensajeId).innerText = texto;
+    }
+
+    function marcarOK(campo, mensajeId) {
+      campo.classList.remove("campo-error");
+      campo.classList.add("campo-ok");
+      document.getElementById(mensajeId).innerText = "";
+    }
+
+    // EVENTOS EN TIEMPO REAL
+    document.querySelectorAll("input, select").forEach(el => {
+      el.addEventListener("input", validar);
+      el.addEventListener("change", validar);
+    });
+
+    // ENVÍO A WHATSAPP
+    document.getElementById("btnEnviar").addEventListener("click", function () {
+      let mensaje =
+        "Solicitud de alquiler de salón:%0A" +
+        "Nombre: " + document.getElementById("nombre").value + "%0A" +
+        "Evento: " + document.getElementById("evento").value + "%0A" +
+        "Personas: " + document.getElementById("personas").value + "%0A" +
+        "Fecha: " + document.getElementById("fecha").value + "%0A" +
+        "Horario: " + document.getElementById("horario").value;
+
+      window.open("https://wa.me/5493816836838?text=" + mensaje, "_blank");
+    });
+  </script>
+
+</body>
+</html>
