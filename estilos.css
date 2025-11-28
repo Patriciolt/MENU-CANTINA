@@ -456,4 +456,73 @@ body.fondo-rustico {
   font-weight: bold;
   color: #0a1a3d;
 }
+/* ============================================================
+   BOTÓN VERDE - EMPANADAS (WHATSAPP)
+============================================================ */
+.btn-wapp-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 80%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0.9rem 1.2rem;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.05rem;
+  border-radius: 999px;
+  background: #25D366;
+  color: #ffffff;
+  border: 2px solid #1ebe5d;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: 0.2s ease;
+}
+
+.btn-wapp-home:hover {
+  background: #1ebe5d;
+  transform: translateY(-2px);
+}
+
+.icono-wapp-home {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+
+/* ============================================================
+   BOTÓN AZUL - SALÓN PARA EVENTOS
+============================================================ */
+.btn-salon-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 80%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0.9rem 1.2rem;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.05rem;
+  border-radius: 999px;
+  background: #004aad;
+  color: #ffffff;
+  border: 2px solid #003b8a;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: 0.2s ease;
+}
+
+.btn-salon-home:hover {
+  background: #003b8a;
+  transform: translateY(-2px);
+}
+
+.icono-salon-home {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
 
