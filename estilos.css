@@ -1,7 +1,6 @@
-/* =============================== */
-/*  RESET & BASE                   */
-/* =============================== */
-
+/* ============================================================
+   RESET GENERAL Y BASE
+============================================================ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,10 +15,10 @@ body {
   color: #0a1a3d;
 }
 
-/* =============================== */
-/*  FONDO RÚSTICO                  */
-/* =============================== */
 
+/* ============================================================
+   FONDO RÚSTICO
+============================================================ */
 .fondo-rustico {
   background-image: url("img/fondo-textura.jpg");
   background-size: cover;
@@ -30,14 +29,14 @@ body {
 .overlay-rustico {
   position: fixed;
   inset: 0;
-  background: rgba(242, 228, 201, 0.85);
+  background: rgba(242, 228, 201, 0.70); /* Aclarado como pediste */
   z-index: -1;
 }
 
-/* =============================== */
-/*  INICIO                         */
-/* =============================== */
 
+/* ============================================================
+   PANTALLA DE INICIO
+============================================================ */
 .contenedor-inicio {
   max-width: 480px;
   margin: 0 auto;
@@ -58,12 +57,7 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* Ocultar textos de título antiguos, si existían */
-.titulo-inicio, .subtitulo-inicio {
-  display: none;
-}
-
-/* Línea roja decorativa debajo del logo */
+/* Línea decorativa */
 .header-inicio::after {
   content: "";
   margin-top: 0.8rem;
@@ -72,7 +66,7 @@ body {
   background-color: #a9352b;
 }
 
-/* Botones de la pantalla de inicio */
+/* BOTONERA */
 .botones-inicio {
   margin-top: 2.5rem;
   display: flex;
@@ -113,16 +107,41 @@ body {
   filter: brightness(1.05);
 }
 
+/* FOOTER */
 .footer-inicio {
   margin-top: 2.5rem;
   font-size: 0.85rem;
   color: #4a3a2a;
 }
 
-/* =============================== */
-/*  MENÚ INTERNO                   */
-/* =============================== */
 
+/* ============================================================
+   ICONO INSTAGRAM INTEGRADO (NUEVO)
+============================================================ */
+.inst-top {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  margin-bottom: 18px;
+}
+
+.inst-icon {
+  width: 40px;
+  height: 40px;
+  opacity: 0.90;
+  transition: 0.2s;
+  filter: drop-shadow(1px 1px 3px #00000040);
+}
+
+.inst-icon:hover {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+
+/* ============================================================
+   MENÚ INTERNO
+============================================================ */
 .header-menu {
   display: flex;
   justify-content: center;
@@ -144,19 +163,24 @@ body {
   padding: 1.2rem 1rem 2.5rem;
 }
 
-/* Bloque resumen de promos encima del menú */
+
+/* ------------------------------------------------------------
+   Bloque resúmen de promos
+------------------------------------------------------------ */
 .bloque-promos-resumen {
   margin-bottom: 0.8rem;
 }
 
-/* Lista de categorías */
+
+/* ------------------------------------------------------------
+   Categorías del menú plegables
+------------------------------------------------------------ */
 .lista-categorias {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-/* Cada categoría */
 .categoria {
   background: rgba(255, 248, 232, 0.96);
   border-radius: 10px;
@@ -164,7 +188,6 @@ body {
   overflow: hidden;
 }
 
-/* Encabezado de categoría */
 .categoria-header {
   display: flex;
   align-items: center;
@@ -187,14 +210,20 @@ body {
   margin-left: 0.5rem;
 }
 
-/* Contenido plegable */
 .categoria-contenido {
   max-height: 0;
   overflow: hidden;
   padding: 0 1rem;
+  transition: max-height 0.35s ease, opacity 0.35s ease;
+  opacity: 0;
 }
 
-/* Producto */
+.categoria-contenido.activa {
+  opacity: 1;
+}
+
+
+/* Items */
 .item-producto {
   padding: 0.45rem 0;
   border-bottom: 1px dashed rgba(170, 130, 90, 0.4);
@@ -227,10 +256,10 @@ body {
   margin-top: 0.1rem;
 }
 
-/* =============================== */
-/*  BOTÓN FLOTANTE PROMOS          */
-/* =============================== */
 
+/* ============================================================
+   BOTÓN FLOTANTE PROMOS
+============================================================ */
 .btn-flotante {
   position: fixed;
   right: 1rem;
@@ -247,10 +276,10 @@ body {
   z-index: 10;
 }
 
-/* =============================== */
-/*  POPUP PROMOS                   */
-/* =============================== */
 
+/* ============================================================
+   POPUP DE PROMOS
+============================================================ */
 .popup-oscuro {
   position: fixed;
   inset: 0;
@@ -288,10 +317,10 @@ body {
   margin-bottom: 0.4rem;
 }
 
-/* =============================== */
-/*  PÁGINA DE PROMOS               */
-/* =============================== */
 
+/* ============================================================
+   PÁGINA DE PROMOS
+============================================================ */
 .contenedor-promos {
   max-width: 640px;
   margin: 0 auto;
@@ -321,11 +350,10 @@ body {
   font-weight: bold;
 }
 
-/* =============================== */
-/*  ANIMACIONES RÚSTICAS EXTRA     */
-/* =============================== */
 
-/* Ligero movimiento de textura tipo papel antiguo */
+/* ============================================================
+   ANIMACIONES VISUALES
+============================================================ */
 body.fondo-rustico {
   animation: grainMove 6s infinite ease-in-out alternate;
 }
@@ -336,7 +364,6 @@ body.fondo-rustico {
   100% { filter: contrast(98%) brightness(99%); }
 }
 
-/* Animación de entrada para logos */
 .logo-inicio,
 .logo-menu {
   opacity: 0;
@@ -349,17 +376,6 @@ body.fondo-rustico {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Transición suave al abrir categorías */
-.categoria-contenido {
-  transition: max-height 0.35s ease, opacity 0.35s ease;
-  opacity: 0;
-}
-
-.categoria-contenido.activa {
-  opacity: 1;
-}
-
-/* Pequeño rebote en el botón flotante de promos */
 .btn-flotante {
   animation: floatPulse 2.5s infinite ease-in-out;
 }
@@ -375,7 +391,6 @@ body.fondo-rustico {
   }
 }
 
-/* Imagen dentro del popup de promos */
 .promo-img-popup {
   max-width: 180px;
   display: block;
@@ -383,161 +398,10 @@ body.fondo-rustico {
   filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
 }
 
-/* Resumen mini de promo en la parte superior del menú */
-.tarjeta-promo-mini {
-  background: rgba(255, 245, 230, 0.95);
-  border: 2px solid #a9352b;
-  border-radius: 10px;
-  padding: 0.6rem 0.8rem;
-  font-size: 0.9rem;
-  margin-bottom: 0.8rem;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
-/* =============================== */
-/*  RESET & BASE                   */
-/* =============================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-body {
-  font-family: Arial, sans-serif;
-}
-
-/* =============================== */
-/*  FONDO RÚSTICO                  */
-/* =============================== */
-.fondo-rustico {
-  background-image: url("img/fondo-textura.jpg");
-  background-size: cover;
-  background-attachment: fixed;
-}
-
-.overlay-rustico {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.45);
-  z-index: -1;
-}
-
-/* =============================== */
-/*   HEADER MENÚ                   */
-/* =============================== */
-.header-menu {
-  text-align: center;
-  padding: 20px 0;
-}
-
-.logo-menu {
-  width: 140px;
-  filter: drop-shadow(2px 2px 6px black);
-}
-
-/* =============================== */
-/*   TITULOS                       */
-/* =============================== */
-.titulo-seccion {
-  text-align: center;
-  margin-top: 10px;
-  color: #fff;
-  font-size: 2rem;
-  text-shadow: 2px 2px 5px black;
-}
-
-.titulo-categoria {
-  color: #fff;
-  font-size: 1.6rem;
-  margin: 25px 0 10px;
-  text-align: center;
-  text-shadow: 2px 2px 4px black;
-}
-
-/* =============================== */
-/*  GRID MENÚ                      */
-/* =============================== */
-.menu-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 0 20px;
-}
-
-.menu-item {
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 12px;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: bold;
-  box-shadow: 0 0 8px #00000066;
-}
-
-/* =============================== */
-/*  BOTÓN PROMOS                   */
-/* =============================== */
-.btn-promos {
-  display: block;
-  margin: 40px auto 20px;
-  padding: 12px 20px;
-  font-size: 1.2rem;
-  border-radius: 10px;
-  border: none;
-  background-color: #ffcc00;
-  cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 0 8px #00000077;
-}
-
-.btn-promos:hover {
-  background-color: #ffdd33;
-}
-
-/* =============================== */
-/*  POPUP OSCURO                   */
-/* =============================== */
-.popup-oscuro {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-contenido {
-  background-color: white;
-  padding: 25px;
-  width: 80%;
-  max-width: 450px;
-  border-radius: 12px;
-  box-shadow: 0 0 20px #000;
-}
-
-.popup-titulo {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.popup-cerrar {
-  float: right;
-  background: none;
-  border: none;
-  font-size: 1.7rem;
-  cursor: pointer;
-}
-
-/* ================================================= */
-/*   BLOQUE WHATSAPP SUPERIOR (AGREGADO AHORA)       */
-/* ================================================= */
+/* ============================================================
+   BLOQUE WHATSAPP SUPERIOR (YA FUNCIONANDO)
+============================================================ */
 .wapp-top {
   width: 100%;
   display: flex;
@@ -576,4 +440,3 @@ body {
   color: #ffffff;
   text-shadow: 2px 2px 4px #000;
 }
-
