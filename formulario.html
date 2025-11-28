@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
 </head>
 
 <body class="fondo-rustico">
+
   <div class="overlay-rustico"></div>
 
   <div class="form-container">
@@ -64,7 +66,6 @@
     <a href="index.html" class="volver">Volver al inicio</a>
   </div>
 
-  <!-- VALIDACIÓN Y ENVÍO -->
   <script>
     const campos = {
       nombre: false,
@@ -126,35 +127,29 @@
         campos.horario = true;
       }
 
-      // HABILITAR / DESHABILITAR BOTÓN
+      // HABILITAR BOTÓN
       const btn = document.getElementById("btnEnviar");
-      if (campos.nombre && campos.evento && campos.personas && campos.fecha && campos.horario) {
-        btn.disabled = false;
-      } else {
-        btn.disabled = true;
-      }
+      btn.disabled = !(campos.nombre && campos.evento && campos.personas && campos.fecha && campos.horario);
     }
 
-    function marcarError(campo, mensajeId, texto) {
+    function marcarError(campo, id, texto) {
       campo.classList.remove("campo-ok");
       campo.classList.add("campo-error");
-      document.getElementById(mensajeId).innerText = texto;
+      document.getElementById(id).innerText = texto;
     }
 
-    function marcarOK(campo, mensajeId) {
+    function marcarOK(campo, id) {
       campo.classList.remove("campo-error");
       campo.classList.add("campo-ok");
-      document.getElementById(mensajeId).innerText = "";
+      document.getElementById(id).innerText = "";
     }
 
-    // EVENTOS EN TIEMPO REAL
     document.querySelectorAll("input, select").forEach(el => {
       el.addEventListener("input", validar);
       el.addEventListener("change", validar);
     });
 
-    // ENVÍO A WHATSAPP
-    document.getElementById("btnEnviar").addEventListener("click", function () {
+    document.getElementById("btnEnviar").addEventListener("click", () => {
       let mensaje =
         "Solicitud de alquiler de salón:%0A" +
         "Nombre: " + document.getElementById("nombre").value + "%0A" +
