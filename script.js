@@ -135,6 +135,8 @@ function procesarCSV(csvText) {
   const idxOrden = encabezados.indexOf("Orden");
   const idxPromo = encabezados.indexOf("Promo");
   const idxPrecioPromo = encabezados.indexOf("Precio Promo");
+  const idxImagen = encabezados.indexOf("Imagen");        // <-- NUEVO
+  const idxColorFondo = encabezados.indexOf("ColorFondo"); // <-- NUEVO
 
   const categorias = {};
   const promos = [];
@@ -155,6 +157,10 @@ function procesarCSV(csvText) {
     const promo = (cols[idxPromo] || "").trim().toLowerCase();
     const precioPromo = (cols[idxPrecioPromo] || "").trim();
 
+    // Imagen y fondo (nuevo)
+    const imagen = idxImagen >= 0 ? (cols[idxImagen] || "").trim() : "";
+    const colorFondo = idxColorFondo >= 0 ? (cols[idxColorFondo] || "").trim() : "";
+
     const item = {
       categoria,
       subcategoria,
@@ -164,6 +170,8 @@ function procesarCSV(csvText) {
       orden,
       promo: promo === "sí" || promo === "si",
       precioPromo,
+      imagen,
+      colorFondo, // <-- se agrega al item
     };
 
     if (!categorias[categoria]) categorias[categoria] = [];
@@ -304,18 +312,21 @@ function renderPromosPagina(promos, contenedor) {
     tarjeta.className = "promo-tarjeta";
 
     const key = p.producto.trim().toLowerCase();
-    const imgURL = IMAGENES_PROMO[key];
+    const imgURL = p.imagen ? `img/${p.imagen}` : IMAGENES_PROMO[key];
 
     tarjeta.innerHTML = `
       ${imgURL ? `<img src="${imgURL}" alt="Promo">` : ""}
+
       <h3>${p.producto}</h3>
       ${p.descripcion ? `<p>${p.descripcion}</p>` : ""}
+
       <p>
         ${
           p.precio
             ? `<span class="precio-tachado">$${p.precio}</span>`
             : ""
         }
+
         ${
           p.precioPromo
             ? `<span class="promo-precio">$${p.precioPromo}</span>`
@@ -345,9 +356,13 @@ function manejarPromos(
     return;
   }
 
+  // La PRIMERA promo activa
   const primera = promos[0];
+
   const key = primera.producto.trim().toLowerCase();
-  const imgPromo = IMAGENES_PROMO[key];
+  const imgPromo = primera.imagen
+    ? `img/${primera.imagen}`
+    : IMAGENES_PROMO[key];
 
   // Resumen mini arriba del menú
   if (bloquePromosResumen) {
@@ -373,21 +388,35 @@ function manejarPromos(
   }, 800);
 }
 
+
+/* ------------------------------------------------------------------
+   POPUP DE PROMOS – INCLUYE FONDO MORADO
+-------------------------------------------------------------------*/
 function mostrarPopupPromo(item, imgPromo, popup, popupDetalle) {
   if (!popup || !popupDetalle) return;
 
+  let claseFondo = "";
+
+  if (item.colorFondo && item.colorFondo.toLowerCase() === "morado") {
+    claseFondo = "promo-fondo-morado";
+  }
+
   popupDetalle.innerHTML = `
-    ${imgPromo ? `<img src="${imgPromo}" class="promo-img-popup" alt="Promo">` : ""}
-    <h3>${item.producto}</h3>
-    ${item.descripcion ? `<p>${item.descripcion}</p>` : ""}
-    ${
-      item.precioPromo
-        ? `<p>
-             <span style="text-decoration:line-through;margin-right:0.3rem;">$${item.precio}</span>
-             <span style="color:#c00000;font-weight:bold;">$${item.precioPromo}</span>
-           </p>`
-        : ""
-    }
+    <div class="promo-popup-contenedor ${claseFondo}">
+      ${imgPromo ? `<img src="${imgPromo}" class="promo-popup-img" alt="Promo">` : ""}
+
+      <h3>${item.producto}</h3>
+      ${item.descripcion ? `<p>${item.descripcion}</p>` : ""}
+
+      ${
+        item.precioPromo
+          ? `<p>
+               <span style="text-decoration:line-through;margin-right:0.3rem;">$${item.precio}</span>
+               <span style="color:#c00000;font-weight:bold;">$${item.precioPromo}</span>
+             </p>`
+          : ""
+      }
+    </div>
   `;
 
   popup.style.display = "flex";
