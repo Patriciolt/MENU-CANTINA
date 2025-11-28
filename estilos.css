@@ -126,8 +126,8 @@ body {
 }
 
 .inst-icon {
-  width: 40px;
-  height: 40px;
+  width: 80px;
+  height: 60px;
   opacity: 0.90;
   transition: 0.2s;
   filter: drop-shadow(1px 1px 3px #00000040);
@@ -440,3 +440,4 @@ body.fondo-rustico {
   color: #ffffff;
   text-shadow: 2px 2px 4px #000;
 }
+
