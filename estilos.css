@@ -142,7 +142,7 @@ body {
   display: flex;
   justify-content: center;
   margin-top: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 5px;
 }
 
 .wapp-banner a {
@@ -183,12 +183,12 @@ body {
 .contenedor-menu {
   max-width: 640px;
   margin: 0 auto;
-  padding: 1.2rem 1rem 2.5rem;
+  padding: 0.3rem 1rem 2rem;
 }
 
 .titulo-seccion {
   text-align: center;
-  margin-top: 10px;
+  margin-top: 0px;
   color: #0a1a3d;
   font-size: 2rem;
   font-weight: bold;
@@ -368,5 +368,6 @@ body.fondo-rustico {
     transform: translateY(-4px);
   }
 }
+
 
 
