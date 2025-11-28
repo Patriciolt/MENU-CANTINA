@@ -10,41 +10,40 @@
 
 <body class="fondo-rustico">
 
-  <!-- Bloque WhatsApp arriba del menú -->
-  <div class="wapp-top">
-    <a href="https://wa.me/5493816836838" target="_blank" class="wapp-link">
-      <img src="img/icono wapp.png" class="wapp-icon" alt="WhatsApp" />
-      <div class="wapp-texto">
-        <span class="wapp-numero">+54 9 3816 83-6838</span>
-        <span class="wapp-leyenda">Hacé tu pedido cuando estés en el club</span>
-      </div>
-    </a>
-  </div>
-
   <div class="overlay-rustico"></div>
 
-  <!-- Encabezado SOLO LOGO -->
+  <!-- LOGO -->
   <header class="header-menu">
     <img src="img/logo.png" class="logo-menu" alt="Logo Cantina ADPUT" />
   </header>
 
+  <!-- BANNER WHATSAPP (ANCHO NORMAL) -->
+  <div class="wapp-banner">
+    <a href="https://wa.me/5493816836838" target="_blank">
+      <img src="img/icono wapp.png" class="wapp-banner-icon" alt="WhatsApp" />
+      <div class="wapp-banner-texto">
+        <span class="wapp-banner-numero">+54 9 3816 83-6838</span>
+        <span class="wapp-banner-leyenda">Hacé tu pedido cuando estés en el club</span>
+      </div>
+    </a>
+  </div>
+
   <main class="contenedor-menu">
 
-    <!-- TÍTULO GENERAL -->
     <h1 class="titulo-seccion">Menú</h1>
 
-    <!-- RESUMEN DE PROMOS -->
+    <!-- RESUMEN PROMOS -->
     <div class="bloque-promos-resumen"></div>
 
-    <!-- LISTA COMPLETA DE CATEGORÍAS (ACORDEÓN) -->
+    <!-- CATEGORÍAS -->
     <div id="menu-categorias"></div>
 
-    <!-- BOTÓN VER PROMO -->
-    <button id="btn-promos" class="btn-promos" style="display:none">Ver Promos</button>
+    <!-- BOTÓN PROMO -->
+    <button id="btn-promos" class="btn-promos" style="display:none;">Ver Promos</button>
 
   </main>
 
-  <!-- Popup oscuro para promos -->
+  <!-- POPUP PROMOS -->
   <div id="popup-promos" class="popup-oscuro" style="display:none;">
     <div class="popup-contenido">
       <button id="popup-cerrar" class="popup-cerrar">✕</button>
@@ -58,3 +57,4 @@
 </body>
 
 </html>
+
