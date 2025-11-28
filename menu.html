@@ -10,6 +10,17 @@
 
 <body class="fondo-rustico">
 
+  <!-- Bloque WhatsApp arriba del menú -->
+  <div class="wapp-top">
+    <a href="https://wa.me/5493816836838" target="_blank" class="wapp-link">
+      <img src="img/icono wapp.png" class="wapp-icon" alt="WhatsApp" />
+      <div class="wapp-texto">
+        <span class="wapp-numero">+54 9 3816 83-6838</span>
+        <span class="wapp-leyenda">Hacé tu pedido cuando estés en el club</span>
+      </div>
+    </a>
+  </div>
+
   <div class="overlay-rustico"></div>
 
   <!-- Encabezado SOLO LOGO -->
@@ -19,18 +30,25 @@
 
   <main class="contenedor-menu">
 
-    <!-- Bloque de promos (resumen arriba del menú) -->
-    <section id="promos" class="bloque-promos-resumen"></section>
+    <!-- TÍTULO GENERAL -->
+    <h1 class="titulo-seccion">Menú</h1>
 
-    <!-- Categorías cargadas dinámicamente -->
-    <section id="menu-categorias" class="lista-categorias"></section>
+    <!-- *** MENÚ PRINCIPAL *** -->
+    <section class="menu-seccion" id="comidas">
+      <h2 class="titulo-categoria">Comidas</h2>
+      <div class="menu-grid" id="lista-comidas"></div>
+    </section>
+
+    <!-- *** BEBIDAS *** -->
+    <section class="menu-seccion" id="bebidas">
+      <h2 class="titulo-categoria">Bebidas</h2>
+      <div class="menu-grid" id="lista-bebidas"></div>
+    </section>
+
+    <!-- BOTÓN PROMOS -->
+    <button id="btn-promos" class="btn-promos">Ver Promos</button>
 
   </main>
-
-  <!-- Botón flotante de promos -->
-  <button id="btn-promos" class="btn-flotante" style="display:none;">
-    🔔 Promos
-  </button>
 
   <!-- Popup oscuro para promos -->
   <div id="popup-promos" class="popup-oscuro" style="display:none;">
@@ -42,6 +60,8 @@
   </div>
 
   <script src="script.js"></script>
+
 </body>
 
 </html>
+
