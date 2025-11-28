@@ -374,3 +374,86 @@ body.fondo-rustico {
   0% { opacity: 0; transform: translateY(-20px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+/* ============================================================
+   FORMULARIO SALÓN - VALIDACIÓN
+============================================================ */
+
+.form-container {
+  max-width: 480px;
+  margin: 2rem auto;
+  background: rgba(255, 248, 232, 0.95);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #0a1a3d;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #b8b8b8;
+  font-size: 1rem;
+}
+
+/* Validaciones visuales */
+.campo-error {
+  border: 2px solid #ff0000 !important;
+}
+
+.campo-ok {
+  border: 2px solid #00a83f !important;
+}
+
+.mensaje-error {
+  color: #ff0000;
+  font-size: 0.85rem;
+  margin-top: 2px;
+  display: block;
+}
+
+/* Botón estilo WhatsApp */
+.btn-wapp-send {
+  width: 100%;
+  padding: 0.8rem;
+  background: #25D366;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
+.btn-wapp-send:disabled {
+  background: #a8e6c3;
+  cursor: not-allowed;
+}
+
+.volver {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  text-decoration: none;
+  font-weight: bold;
+  color: #0a1a3d;
+}
+
