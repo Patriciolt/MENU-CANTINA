@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solicitud de Alquiler de Salón - Cantina ADPUT</title>
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+
+<body class="fondo-rustico">
+  <div class="overlay-rustico"></div>
+
+  <div class="form-container">
+    <h2>Solicitud de Alquiler de Salón</h2>
+
+    <!-- APELLIDO Y NOMBRE -->
+    <div class="form-group">
+      <label>Apellido y Nombre</label>
+      <input type="text" id="nombre" placeholder="Ej: Juan Pérez" />
+      <small class="mensaje-error" id="err-nombre"></small>
+    </div>
+
+    <!-- EVENTO -->
+    <div class="form-group">
+      <label>Tipo de evento</label>
+      <select id="evento">
+        <option value="">Seleccione una opción</option>
+        <option value="Cumpleaños">Cumpleaños</option>
+        <option value="Bautismo">Bautismo</option>
+        <option value="Comunión">Comunión</option>
+        <option value="Reunión Familiar">Reunión Familiar</option>
+        <option value="Evento Empresarial">Evento Empresarial</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <small class="mensaje-error" id="err-evento"></small>
+    </div>
+
+    <!-- CANT PERSONAS -->
+    <div class="form-group">
+      <label>Cantidad de personas</label>
+      <input type="number" id="personas" placeholder="Ej: 40" />
+      <small class="mensaje-error" id="err-personas"></small>
+    </div>
+
+    <!-- FECHA -->
+    <div class="form-group">
+      <label>Fecha del evento</label>
+      <input type="date" id="fecha" />
+      <small class="mensaje-error" id="err-fecha"></small>
+    </div>
+
+    <!-- HORARIO -->
+    <div class="form-group">
+      <label>Horario del evento</label>
+      <input type="time" id="horario" />
+      <small class="mensaje-error" id="err-horario"></small>
+    </div>
+
+    <!-- BOTÓN ENVIAR -->
+    <button id="btnEnviar" class="btn-wapp-send" disabled>
+      Enviar por WhatsApp
+    </button>
+
+    <a href="index.html" class="volver">Volver al inicio</a>
+  </div>
+
+  <!-- VALIDACIÓN Y ENVÍO -->
+  <script>
+    const campos = {
+      nombre: false,
+      evento: false,
+      personas: false,
+      fecha: false,
+      horario: false
+    };
+
+    function validar() {
+      let nombre = document.getElementById("nombre");
+      let evento = document.getElementById("evento");
+      let personas = document.getElementById("personas");
+      let fecha = document.getElementById("fecha");
+      let horario = document.getElementById("horario");
+
+      // Validar nombre
+      if (nombre.value.trim() === "") {
+        marcarError(nombre, "err-nombre", "Este campo es obligatorio");
+        campos.nombre = false;
+      } else {
+        marcarOK(nombre, "err-nombre");
+        campos.nombre = true;
+      }
+
+      // Validar evento
+      if (evento.value === "") {
+        marcarError(evento, "err-evento", "Seleccione un tipo de evento");
+        campos.evento = false;
+      } else {
+        marcarOK(evento, "err-evento");
+        campos.evento = true;
+      }
+
+      // Validar personas
+      if (personas.value.trim() === "" || personas.value <= 0) {
+        marcarError(personas, "err-personas", "Ingrese una cantidad válida");
+        campos.personas = false;
+      } else {
+        marcarOK(personas, "err-personas");
+        campos.personas = true;
+      }
+
+      // Validar fecha
+      if (fecha.value.trim() === "") {
+        marcarError(fecha, "err-fecha", "Seleccione una fecha");
+        campos.fecha = false;
+      } else {
+        marcarOK(fecha, "err-fecha");
+        campos.fecha = true;
+      }
+
+      // Validar horario
+      if (horario.value.trim() === "") {
+        marcarError(horario, "err-horario", "Seleccione un horario");
+        campos.horario = false;
+      } else {
+        marcarOK(horario, "err-horario");
+        campos.horario = true;
+      }
+
+      // HABILITAR / DESHABILITAR BOTÓN
+      const btn = document.getElementById("btnEnviar");
+      if (campos.nombre && campos.evento && campos.personas && campos.
