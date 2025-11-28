@@ -28,7 +28,7 @@ body {
 .overlay-rustico {
   position: fixed;
   inset: 0;
-  background: rgba(242, 228, 201, 0.70); /* Aclarado */
+  background: rgba(242, 228, 201, 0.70);
   z-index: -1;
 }
 
@@ -49,7 +49,10 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* ICONO INSTAGRAM */
+
+/* ============================================================
+   ICONO INSTAGRAM EN INICIO
+============================================================ */
 .inst-top {
   display: flex;
   justify-content: center;
@@ -70,7 +73,10 @@ body {
   transform: scale(1.06);
 }
 
-/* BOTONERA INICIO */
+
+/* ============================================================
+   BOTONES INICIO
+============================================================ */
 .botones-inicio {
   margin-top: 2.5rem;
   display: flex;
@@ -111,12 +117,16 @@ body {
   filter: brightness(1.05);
 }
 
-/* PIE DE INICIO */
+
+/* ============================================================
+   PIE INICIO
+============================================================ */
 .footer-inicio {
   margin-top: 2.5rem;
   font-size: 0.85rem;
   color: #4a3a2a;
 }
+
 
 /* ============================================================
    MENÚ
@@ -125,7 +135,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem 0;
+  padding: 0.5rem 0 0.2rem;
   border-bottom: 2px solid #a9352b;
   background: rgba(255, 248, 232, 0.93);
 }
@@ -136,13 +146,16 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
 }
 
-/* BANNER WHATSAPP (ELEGANTE, ANCHO NORMAL) */
+
+/* ============================================================
+   BANNER WHATSAPP
+============================================================ */
 .wapp-banner {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 12px;
-  margin-bottom: 5px;
+  margin-top: 4px;
+  margin-bottom: 0px;
 }
 
 .wapp-banner a {
@@ -151,15 +164,15 @@ body {
   gap: 12px;
   background: rgba(255, 248, 232, 0.92);
   border: 2px solid #d8c4a1;
-  padding: 10px 16px;
+  padding: 4px 10px;
   border-radius: 14px;
   text-decoration: none;
   box-shadow: 0 3px 8px rgba(0,0,0,0.20);
 }
 
 .wapp-banner-icon {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
 }
 
@@ -169,36 +182,40 @@ body {
 }
 
 .wapp-banner-numero {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: bold;
   color: #0a1a3d;
 }
 
 .wapp-banner-leyenda {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #4a3a2a;
 }
 
-/* CONTENEDOR DEL MENÚ */
+
+/* ============================================================
+   CONTENEDOR DEL MENÚ
+============================================================ */
 .contenedor-menu {
   max-width: 640px;
   margin: 0 auto;
-  padding: 0.3rem 1rem 2rem;
+  padding: 0rem 1rem 1.5rem;
 }
 
 .titulo-seccion {
   text-align: center;
-  margin-top: 0px;
+  margin-top: -4px;
   color: #0a1a3d;
   font-size: 2rem;
   font-weight: bold;
 }
 
+
 /* ============================================================
    CATEGORÍAS DEL MENÚ (ACORDEÓN)
 ============================================================ */
 .bloque-promos-resumen {
-  margin-bottom: 1rem;
+  margin-bottom: 0.4rem;
 }
 
 #menu-categorias {
@@ -214,7 +231,6 @@ body {
   overflow: hidden;
 }
 
-/* Header */
 .categoria-header {
   display: flex;
   align-items: center;
@@ -229,7 +245,6 @@ body {
   margin-left: 0.5rem;
 }
 
-/* Contenido */
 .categoria-contenido {
   max-height: 0;
   overflow: hidden;
@@ -242,7 +257,6 @@ body {
   opacity: 1;
 }
 
-/* Items */
 .item-producto {
   padding: 0.6rem 0;
   border-bottom: 1px dashed rgba(170, 130, 90, 0.4);
@@ -274,12 +288,13 @@ body {
   color: #4a3a2a;
 }
 
+
 /* ============================================================
    BOTÓN PROMOS
 ============================================================ */
 .btn-promos {
   display: block;
-  margin: 40px auto 20px;
+  margin: 35px auto 20px;
   padding: 12px 20px;
   font-size: 1.2rem;
   border-radius: 10px;
@@ -294,7 +309,10 @@ body {
   background-color: #ffdd33;
 }
 
-/* POPUP PROMOS */
+
+/* ============================================================
+   POPUP PROMOS
+============================================================ */
 .popup-oscuro {
   position: fixed;
   inset: 0;
@@ -331,6 +349,7 @@ body {
   margin-bottom: 0.5rem;
 }
 
+
 /* ============================================================
    ANIMACIONES
 ============================================================ */
@@ -355,20 +374,3 @@ body.fondo-rustico {
   0% { opacity: 0; transform: translateY(-20px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
-.btn-flotante {
-  animation: floatPulse 2.5s infinite ease-in-out;
-}
-
-@keyframes floatPulse {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-
-
-
