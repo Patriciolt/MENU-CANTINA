@@ -126,7 +126,7 @@ body {
 }
 
 .inst-icon {
-  width: 150px;
+  width: 200px;
   height: 150px;
   opacity: 0.90;
   transition: 0.2s;
@@ -440,5 +440,6 @@ body.fondo-rustico {
   color: #ffffff;
   text-shadow: 2px 2px 4px #000;
 }
+
 
 
