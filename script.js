@@ -132,7 +132,7 @@ function procesarCSV(csvText) {
   const idxOrden = encabezados.indexOf("Orden");
   const idxPromo = encabezados.indexOf("Promo");
   const idxPrecioPromo = encabezados.indexOf("Precio Promo");
-  const idxImagen = encabezados.indexOf("Imagen");       
+  const idxImagen = encabezados.indexOf("Imagen");
   const idxColorFondo = encabezados.indexOf("ColorFondo");
 
   const categorias = {};
@@ -145,6 +145,8 @@ function procesarCSV(csvText) {
     const activo = (cols[idxActivo] || "").trim().toLowerCase();
     if (activo !== "sí" && activo !== "si") continue;
 
+    const promoValor = (cols[idxPromo] || "").trim();
+
     const item = {
       categoria: (cols[idxCat] || "").trim(),
       subcategoria: (cols[idxSub] || "").trim(),
@@ -152,7 +154,10 @@ function procesarCSV(csvText) {
       descripcion: (cols[idxDesc] || "").trim(),
       precio: (cols[idxPrecio] || "").trim(),
       orden: parseInt((cols[idxOrden] || "0").trim(), 10) || 0,
-      promo: ((cols[idxPromo] || "").trim().toLowerCase() === "si" || (cols[idxPromo] || "").trim().toLowerCase() === "sí"),
+
+      // 🔥🔥🔥 Aquí está la corrección pedida
+      promo: promoValor !== "",
+
       precioPromo: (cols[idxPrecioPromo] || "").trim(),
       imagen: idxImagen >= 0 ? (cols[idxImagen] || "").trim() : "",
       colorFondo: idxColorFondo >= 0 ? (cols[idxColorFondo] || "").trim().toLowerCase() : "",
