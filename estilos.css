@@ -49,7 +49,6 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
-
 /* ============================================================
    ICONO INSTAGRAM EN INICIO
 ============================================================ */
@@ -72,7 +71,6 @@ body {
   opacity: 1;
   transform: scale(1.06);
 }
-
 
 /* ============================================================
    BOTONES INICIO
@@ -117,7 +115,6 @@ body {
   filter: brightness(1.05);
 }
 
-
 /* ============================================================
    PIE INICIO
 ============================================================ */
@@ -126,7 +123,6 @@ body {
   font-size: 0.85rem;
   color: #4a3a2a;
 }
-
 
 /* ============================================================
    MENÚ
@@ -145,7 +141,6 @@ body {
   height: auto;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
 }
-
 
 /* ============================================================
    BANNER WHATSAPP
@@ -192,7 +187,6 @@ body {
   color: #4a3a2a;
 }
 
-
 /* ============================================================
    CONTENEDOR DEL MENÚ
 ============================================================ */
@@ -209,7 +203,6 @@ body {
   font-size: 2rem;
   font-weight: bold;
 }
-
 
 /* ============================================================
    CATEGORÍAS DEL MENÚ (ACORDEÓN)
@@ -288,7 +281,6 @@ body {
   color: #4a3a2a;
 }
 
-
 /* ============================================================
    BOTÓN PROMOS
 ============================================================ */
@@ -308,7 +300,6 @@ body {
 .btn-promos:hover {
   background-color: #ffdd33;
 }
-
 
 /* ============================================================
    POPUP PROMOS
@@ -349,7 +340,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-
 /* ============================================================
    ANIMACIONES
 ============================================================ */
@@ -374,10 +364,10 @@ body.fondo-rustico {
   0% { opacity: 0; transform: translateY(-20px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+
 /* ============================================================
    FORMULARIO SALÓN - VALIDACIÓN
 ============================================================ */
-
 .form-container {
   max-width: 480px;
   margin: 2rem auto;
@@ -412,7 +402,6 @@ body.fondo-rustico {
   font-size: 1rem;
 }
 
-/* Validaciones visuales */
 .campo-error {
   border: 2px solid #ff0000 !important;
 }
@@ -428,7 +417,6 @@ body.fondo-rustico {
   display: block;
 }
 
-/* Botón estilo WhatsApp */
 .btn-wapp-send {
   width: 100%;
   padding: 0.8rem;
@@ -456,6 +444,7 @@ body.fondo-rustico {
   font-weight: bold;
   color: #0a1a3d;
 }
+
 /* ============================================================
    BOTÓN VERDE - EMPANADAS (WHATSAPP)
 ============================================================ */
@@ -489,7 +478,6 @@ body.fondo-rustico {
   height: 34px;
   object-fit: contain;
 }
-
 
 /* ============================================================
    BOTÓN AZUL - SALÓN PARA EVENTOS
@@ -543,4 +531,29 @@ body.fondo-rustico {
   border-radius: 14px;
   margin-bottom: 1rem;
   box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+/* ============================================================
+   NUEVO — CLASES PARA COLORES E IMÁGENES DINÁMICAS
+============================================================ */
+.fondo-dinamico {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.promo-popup-contenedor {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-radius: 14px;
+}
+
+.texto-claro {
+  color: #fff !important;
+  text-shadow: 1px 1px 3px #00000088;
+}
+
+.texto-oscuro {
+  color: #0a1a3d !important;
 }
