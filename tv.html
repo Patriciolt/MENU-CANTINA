@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TV - Cantina ADPUT</title>
+  <link rel="stylesheet" href="tv.css" />
+</head>
+<body>
+  <div class="tv-bg">
+    <div class="tv-watermark" aria-hidden="true"></div>
+    <div class="tv-overlay" aria-hidden="true"></div>
+  </div>
+
+  <main class="tv">
+    <header class="tv-header">
+      <div class="brand">
+        <img class="brand-logo" src="img/logo.png" alt="Cantina ADPUT" />
+        <div class="brand-text">
+          <div class="brand-title">CANTINA ADPUT</div>
+          <div class="brand-sub">Menú en vivo · Precios sujetos a disponibilidad</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="clock" id="clock">--:--</div>
+      </div>
+    </header>
+
+    <section class="tv-content">
+      <div class="panel">
+        <div class="panel-top">
+          <div class="block-badge" id="blockBadge">CARGANDO...</div>
+          <div class="block-title" id="blockTitle">Menú</div>
+        </div>
+
+        <div class="items" id="items">
+          <div class="skeleton">
+            <div class="sk-line"></div>
+            <div class="sk-line"></div>
+            <div class="sk-line"></div>
+            <div class="sk-line"></div>
+            <div class="sk-line"></div>
+          </div>
+        </div>
+
+        <div class="panel-bottom">
+          <div class="ticker" id="ticker">
+            📌 Seguinos en Instagram · Hacé tu pedido en el club · Consultá por PROMOS
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="tv-footer">
+      <div class="footer-left">
+        <span class="dot dot-blue"></span> ADPUT · Cantina
+      </div>
+      <div class="footer-right" id="status">
+        Actualizando...
+      </div>
+    </footer>
+  </main>
+
+  <script src="tv.js"></script>
+</body>
+</html>
