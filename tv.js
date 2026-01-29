@@ -1,207 +1,316 @@
-/* =========================
-   CONFIG
-========================= */
-const SHEET_ID = "1c4WYczs2NjwPz0f9aaSZShC-FaU3H9wnUm7FuYd9c6o";
-const SHEET_NAME = "Sheet1";
+:root{
+  --azul:#1f3f5e;
+  --rojo:#c3382f;
+  --texto:#101820;
+  --fondo:#f4f6f9;
 
-const REFRESH_MS = 60_000;   // refresca datos
-const ROTATE_MS  = 9_000;    // cambia promo
-const SHUFFLE    = true;     // mezclar promos para que no sea siempre igual
-
-/* =========================
-   HELPERS
-========================= */
-const $ = (id) => document.getElementById(id);
-
-function normalize(v){ return (v ?? "").toString().trim(); }
-function lower(v){ return normalize(v).toLowerCase(); }
-function upper(v){ return normalize(v).toUpperCase(); }
-
-function isYes(v){
-  const t = lower(v);
-  return t === "si" || t === "sí" || t === "s" || t === "yes" || t === "y" || t === "1" || t === "true";
-}
-function toNumber(v, fallback = 999999){
-  const t = normalize(v).replace(",", ".");
-  const n = Number(t);
-  return Number.isFinite(n) ? n : fallback;
-}
-function money(v){
-  const t = normalize(v);
-  if(!t) return "";
-  if(/[a-zA-ZxX]/.test(t)) return t; // "2x1", "DESDE", etc
-  const n = toNumber(t, NaN);
-  if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
-  return t;
-}
-function setClock(){
-  const d = new Date();
-  $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  --wm-op:.075;
+  --radius:30px;
+  --sombra: 0 22px 70px rgba(0,0,0,.22);
 }
 
-function shuffleInPlace(arr){
-  for(let i = arr.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+  color:var(--texto);
+  background:var(--fondo);
+  overflow:hidden;
 }
 
-/* =========================
-   SHEETS FETCH (GVIZ)
-========================= */
-async function fetchSheetRows(){
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if(!res.ok) throw new Error(`HTTP ${res.status} al leer Google Sheets`);
-
-  const text = await res.text();
-  const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
-  const data = JSON.parse(jsonText);
-
-  const cols = data.table.cols.map(c => c.label);
-  const rows = data.table.rows;
-
-  return rows.map(r => {
-    const obj = {};
-    r.c?.forEach((cell, i) => {
-      const key = cols[i] || `COL_${i}`;
-      obj[key] = cell?.v ?? "";
-    });
-    return obj;
-  });
+/* Fondo pro animado */
+.tv-bg{
+  position:fixed; inset:0;
+  background: linear-gradient(180deg, #ffffff 0%, var(--fondo) 55%, #ffffff 100%);
+  z-index:0;
+}
+.tv-anim-gradient{
+  position:absolute; inset:-20%;
+  background:
+    radial-gradient(1100px 700px at 12% 10%, rgba(31,63,94,.18), transparent 60%),
+    radial-gradient(1000px 700px at 88% 18%, rgba(195,56,47,.16), transparent 62%),
+    radial-gradient(900px 700px at 50% 92%, rgba(31,63,94,.10), transparent 65%);
+  filter: blur(12px);
+  animation: drift 14s ease-in-out infinite;
+}
+@keyframes drift{
+  0%{ transform: translate(-1.5%, -1%); }
+  50%{ transform: translate(1.5%, 1%); }
+  100%{ transform: translate(-1.5%, -1%); }
 }
 
-/* =========================
-   PROMOS ONLY
-========================= */
-function buildPromos(rows){
-  // Filtrado base: Activo = si, TV ACTIVO = si (o vacío)
-  const valid = rows.filter(r => {
-    const activo = isYes(r["Activo"]);
-    const tvActivoCell = normalize(r["TV ACTIVO"]);
-    const tvActivo = tvActivoCell === "" ? true : isYes(tvActivoCell);
-    return activo && tvActivo && normalize(r["Producto"]);
-  });
-
-  // Solo promos: columna "Promo" con algo O TV BLOQUE = PROMO
-  const promos = valid.filter(r => {
-    const promoCol = normalize(r["Promo"]);
-    const tvBloque = upper(r["TV BLOQUE"]);
-    return promoCol !== "" || tvBloque === "PROMO";
-  });
-
-  // Orden: TV ORDEN -> Orden
-  promos.sort((a,b) => {
-    const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
-    const ob = toNumber(b["TV ORDEN"], toNumber(b["Orden"], 999999));
-    return oa - ob;
-  });
-
-  const out = promos.map(r => {
-    const nombre = normalize(r["Producto"]);
-    const desc = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || normalize(r["Promo"]);
-    const imgName = normalize(r["Imagen"]);
-    const imgSrc = imgName ? `img/${imgName}` : "";
-
-    // Precio promo si existe; si no, Precio; si no, TV PRECIO TEXTO
-    const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
-    const precioPromo = normalize(r["Precio Promo"]);
-    const precio = normalize(r["Precio"]);
-
-    let priceText = "";
-    if(tvPrecio) priceText = tvPrecio;
-    else if(precioPromo) priceText = money(precioPromo);
-    else priceText = money(precio);
-
-    // Nota: sirve para “hasta 22hs”, “3x2”, etc.
-    const note = normalize(r["TV TITULO"]) || "PROMO DEL DÍA";
-
-    return { nombre, desc, imgSrc, priceText, note };
-  });
-
-  if(SHUFFLE) shuffleInPlace(out);
-  return out;
+/* Logo integrado como marca de agua (más “pro”) */
+.tv-logo-watermark{
+  position:absolute; inset:0;
+  background-image:url("img/logo.png");
+  background-repeat:no-repeat;
+  background-position: 86% 58%;
+  background-size: min(72vh, 72vw);
+  opacity:var(--wm-op);
+  transform: rotate(-7deg);
+  filter: saturate(1.05) contrast(1.02);
+  mix-blend-mode: multiply;
+  /* máscara para que se funda con el frente y no “pegue” */
+  -webkit-mask-image: radial-gradient(closest-side at 80% 55%, rgba(0,0,0,.95), rgba(0,0,0,.15) 70%, transparent 100%);
+          mask-image: radial-gradient(closest-side at 80% 55%, rgba(0,0,0,.95), rgba(0,0,0,.15) 70%, transparent 100%);
+}
+.tv-overlay{
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(255,255,255,.46), rgba(255,255,255,.62));
 }
 
-/* =========================
-   RENDER
-========================= */
-let promos = [];
-let idx = 0;
-let rotateTimer = null;
-
-function renderPromo(p){
-  const card = $("promoCard");
-  const img = $("promoImg");
-
-  // animación salida
-  card.classList.remove("fade-in");
-  card.classList.add("fade-out");
-
-  setTimeout(() => {
-    $("promoTitle").textContent = p?.nombre || "SIN PROMOS";
-    $("promoDesc").textContent = p?.desc || "Hoy no hay promos cargadas.";
-    $("promoPrice").textContent = p?.priceText || "";
-    $("promoNote").textContent = p?.note || "";
-
-    if(p?.imgSrc){
-      img.src = p.imgSrc;
-      img.style.display = "block";
-      img.onerror = () => {
-        // si falta la imagen, no rompe el diseño
-        img.removeAttribute("src");
-        img.style.display = "none";
-      };
-    } else {
-      img.removeAttribute("src");
-      img.style.display = "none";
-    }
-
-    card.classList.remove("fade-out");
-    card.classList.add("fade-in");
-  }, 280);
+/* Layout */
+.tv{
+  position:relative;
+  z-index:1;
+  height:100%;
+  padding: 26px 34px;
+  display:flex;
+  flex-direction:column;
+  gap: 16px;
 }
 
-function startRotation(){
-  if(rotateTimer) clearInterval(rotateTimer);
-  if(!promos.length){
-    renderPromo(null);
-    return;
-  }
-
-  renderPromo(promos[idx]);
-
-  rotateTimer = setInterval(() => {
-    idx = (idx + 1) % promos.length;
-    renderPromo(promos[idx]);
-  }, ROTATE_MS);
+.tv-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.brand-logo{
+  width:82px;
+  height:82px;
+  object-fit:contain;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,.18));
+}
+.brand-title{
+  font-weight:950;
+  letter-spacing:.04em;
+  font-size:34px;
+  color:var(--azul);
+}
+.brand-sub{
+  margin-top:6px;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.12em;
+  color:rgba(16,24,32,.72);
 }
 
-async function loadPromos(){
-  try{
-    $("status").textContent = "Actualizando datos…";
-    const rows = await fetchSheetRows();
-    promos = buildPromos(rows);
-    idx = 0;
-
-    $("status").textContent = promos.length ? `OK · ${promos.length} promos` : "Sin promos";
-    startRotation();
-  } catch(err){
-    console.error(err);
-    $("status").textContent = "Error leyendo Google Sheets";
-    renderPromo({
-      nombre: "NO SE PUDO LEER EL SHEET",
-      desc: "Asegurate de que el Sheet esté publicado o accesible (Compartir: Cualquiera con enlace / Lector).",
-      imgSrc: "",
-      priceText: "",
-      note: err?.message || ""
-    });
-  }
+.clock{
+  font-weight:950;
+  font-size:34px;
+  color:var(--azul);
+  padding: 12px 16px;
+  border-radius:16px;
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(31,63,94,.16);
+  box-shadow: 0 12px 40px rgba(0,0,0,.10);
 }
 
-/* INIT */
-setClock();
-setInterval(setClock, 10_000);
+/* Card promo (1 por pantalla) */
+.tv-content{ flex:1; display:flex; }
 
-loadPromos();
-setInterval(loadPromos, REFRESH_MS);
+.promo-card{
+  width:100%;
+  border-radius: var(--radius);
+  overflow:hidden;
+  box-shadow: var(--sombra);
+  border: 1px solid rgba(31,63,94,.18);
+  background: rgba(255,255,255,.78);
+  display:grid;
+  grid-template-columns: 1.25fr 1fr;
+  min-height: 0;
+  position:relative;
+}
+
+/* Shimmer pro */
+.shimmer::after{
+  content:"";
+  position:absolute;
+  top:-20%; left:-60%;
+  width:40%; height:140%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.30), transparent);
+  transform: rotate(18deg);
+  animation: shimmerSweep 7.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes shimmerSweep{
+  0%{ left:-60%; opacity:.0; }
+  15%{ opacity:.55; }
+  40%{ left:120%; opacity:.0; }
+  100%{ left:120%; opacity:.0; }
+}
+
+/* Imagen grande con Ken Burns */
+.promo-media{
+  position:relative;
+  background: rgba(31,63,94,.06);
+  overflow:hidden;
+}
+.promo-media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transform: scale(1.03);
+  animation: kenburns 16s ease-in-out infinite alternate;
+}
+@keyframes kenburns{
+  from{ transform: scale(1.03) translateX(0); }
+  to{ transform: scale(1.08) translateX(-1.2%); }
+}
+
+.promo-media-overlay{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.10), rgba(0,0,0,.02)),
+    radial-gradient(1200px 700px at 30% 30%, rgba(31,63,94,.18), transparent 60%),
+    radial-gradient(900px 700px at 70% 70%, rgba(195,56,47,.14), transparent 65%);
+}
+
+.promo-pill{
+  position:absolute;
+  top:18px; left:18px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight:950;
+  letter-spacing:.08em;
+  font-size:16px;
+  color:#fff;
+  background: linear-gradient(90deg, var(--rojo), rgba(195,56,47,.80));
+  border: 1px solid rgba(255,255,255,.22);
+  box-shadow: 0 14px 34px rgba(195,56,47,.22);
+}
+
+/* Info */
+.promo-info{
+  padding: 26px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap: 18px;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(10px);
+}
+
+.promo-top{ padding-top: 4px; }
+
+.promo-title{
+  font-weight:1000;
+  font-size:64px;
+  line-height:1.02;
+  letter-spacing:.01em;
+  color:var(--texto);
+  text-transform:uppercase;
+}
+.promo-desc{
+  margin-top:12px;
+  font-size:26px;
+  opacity:.82;
+  font-weight:800;
+  line-height:1.25;
+  min-height: 2.2em;
+}
+
+.promo-price-row{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  padding-top: 10px;
+}
+
+.promo-prices{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.old-price{
+  font-weight:950;
+  font-size:30px;
+  color: rgba(16,24,32,.55);
+  text-decoration: line-through;
+  text-decoration-thickness: 4px;
+  text-decoration-color: rgba(195,56,47,.55);
+  letter-spacing:.02em;
+  min-height: 1.1em;
+}
+
+.promo-price{
+  font-weight:1000;
+  font-size:64px;
+  color: var(--rojo);
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: 2px solid rgba(195,56,47,.38);
+  background: rgba(255,255,255,.88);
+  box-shadow: 0 14px 34px rgba(0,0,0,.10);
+  white-space:nowrap;
+  display:inline-block;
+}
+
+.promo-note{
+  font-size:20px;
+  font-weight:950;
+  color: rgba(16,24,32,.72);
+  text-align:right;
+  line-height:1.2;
+  max-width: 360px;
+}
+
+.promo-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(31,63,94,.14);
+  font-size:18px;
+  font-weight:900;
+  color: rgba(16,24,32,.78);
+}
+#status{ font-weight:900; }
+
+/* Footer general */
+.tv-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:18px;
+  opacity:.9;
+}
+.dot{
+  display:inline-block;
+  width:12px; height:12px;
+  border-radius:50%;
+  margin-right:10px;
+}
+.dot-blue{ background: var(--azul); }
+.dot-red{ background: var(--rojo); }
+
+/* Transiciones pro */
+.fade-out{ animation: fadeOut .45s ease forwards; }
+.fade-in{ animation: fadeIn .55s ease forwards; }
+
+@keyframes fadeOut{
+  from{ opacity:1; transform: translateY(0); filter: blur(0); }
+  to{ opacity:0; transform: translateY(12px); filter: blur(1px); }
+}
+@keyframes fadeIn{
+  from{ opacity:0; transform: translateY(-10px); filter: blur(1px); }
+  to{ opacity:1; transform: translateY(0); filter: blur(0); }
+}
+
+/* Responsive */
+@media (max-width: 1100px){
+  .promo-card{ grid-template-columns: 1fr; }
+  .promo-title{ font-size:54px; }
+  .promo-price{ font-size:54px; }
+}
