@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TV - Cantina ADPUT</title>
+  <title>TV Promos - Cantina ADPUT</title>
   <link rel="stylesheet" href="tv.css" />
 </head>
 <body>
@@ -19,7 +19,7 @@
         <img class="brand-logo" src="img/logo.png" alt="Cantina ADPUT" />
         <div class="brand-text">
           <div class="brand-title">CANTINA ADPUT</div>
-          <div class="brand-sub">Menú en vivo · Precios sujetos a disponibilidad</div>
+          <div class="brand-sub">PROMOS EN VIVO</div>
         </div>
       </div>
 
@@ -29,25 +29,27 @@
     </header>
 
     <section class="tv-content">
-      <div class="panel">
-        <div class="panel-top">
-          <div class="block-badge" id="blockBadge">CARGANDO...</div>
-          <div class="block-title" id="blockTitle">Menú</div>
+      <div class="promo-card" id="promoCard">
+        <div class="promo-media">
+          <img id="promoImg" alt="" />
+          <div class="promo-media-overlay" aria-hidden="true"></div>
+          <div class="promo-pill">🔥 PROMO</div>
         </div>
 
-        <div class="items" id="items">
-          <div class="skeleton">
-            <div class="sk-line"></div>
-            <div class="sk-line"></div>
-            <div class="sk-line"></div>
-            <div class="sk-line"></div>
-            <div class="sk-line"></div>
+        <div class="promo-info">
+          <div class="promo-title" id="promoTitle">Cargando promos...</div>
+          <div class="promo-desc" id="promoDesc"></div>
+
+          <div class="promo-price-row">
+            <div class="promo-price" id="promoPrice"></div>
+            <div class="promo-note" id="promoNote"></div>
           </div>
-        </div>
 
-        <div class="panel-bottom">
-          <div class="ticker" id="ticker">
-            📌 Seguinos en Instagram · Hacé tu pedido en el club · Consultá por PROMOS
+          <div class="promo-footer">
+            <div class="promo-footer-left">
+              📌 Consultá por promos en el mostrador
+            </div>
+            <div class="promo-footer-right" id="status">Actualizando...</div>
           </div>
         </div>
       </div>
@@ -55,9 +57,11 @@
 
     <footer class="tv-footer">
       <div class="footer-left">
-        <span class="dot dot-blue"></span> ADPUT · Cantina
+        <span class="dot dot-blue"></span> adputcantina.com.ar
       </div>
-      <div class="footer-right" id="status">Actualizando...</div>
+      <div class="footer-right">
+        <span class="dot dot-red"></span> Promos rotativas
+      </div>
     </footer>
   </main>
 
