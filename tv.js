@@ -1,35 +1,22 @@
 /* =========================
    CONFIG
 ========================= */
-
-// Tu Sheet ID (lo saco de la URL que se ve en tu captura)
 const SHEET_ID = "1c4WYczs2NjwPz0f9aaSZShC-FaU3H9wnUm7FuYd9c6o";
 const SHEET_NAME = "Sheet1";
 
-// Cada cuánto refrescar datos desde Sheets (ms)
 const REFRESH_MS = 60_000;
-
-// Cada cuánto cambia de bloque en la TV (ms)
 const ROTATE_MS = 10_000;
-
-// Máx items por pantalla (TV)
 const MAX_ITEMS = 6;
-
-// Si querés forzar orden de categorías (si no, usa el “Orden/TV ORDEN”)
-const CATEGORY_ORDER = []; // ej: ["PROMOS","EMPANADAS","SANDWICHS","BEBIDAS"]
 
 /* =========================
    HELPERS
 ========================= */
-
 const $ = (id) => document.getElementById(id);
 
-function normalize(v){
-  return (v ?? "").toString().trim();
-}
-function lower(v){
-  return normalize(v).toLowerCase();
-}
+function normalize(v){ return (v ?? "").toString().trim(); }
+function lower(v){ return normalize(v).toLowerCase(); }
+function upper(v){ return normalize(v).toUpperCase(); }
+
 function isYes(v){
   const t = lower(v);
   return t === "si" || t === "sí" || t === "s" || t === "yes" || t === "y" || t === "1" || t === "true";
@@ -42,37 +29,35 @@ function toNumber(v, fallback = 999999){
 function money(v){
   const t = normalize(v);
   if(!t) return "";
-  // Si ya viene tipo "2x1" o "DESDE", lo devolvemos tal cual
   if(/[a-zA-ZxX]/.test(t)) return t;
-  // número -> $ con separador simple
   const n = toNumber(t, NaN);
   if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
   return t;
 }
-
 function setClock(){
   const d = new Date();
-  const hh = String(d.getHours()).padStart(2,"0");
-  const mm = String(d.getMinutes()).padStart(2,"0");
-  $("clock").textContent = `${hh}:${mm}`;
+  $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
+/* =========================
+   SHEETS FETCH (GVIZ JSON)
+========================= */
 async function fetchSheetRows(){
-  // Google Visualization API (no requiere API key si el sheet está publicado/visible)
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?` +
-              `tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
   const res = await fetch(url, { cache: "no-store" });
-  const text = await res.text();
 
-  // La respuesta viene con "google.visualization.Query.setResponse(...);"
+  if(!res.ok){
+    throw new Error(`HTTP ${res.status} al leer Google Sheets`);
+  }
+
+  const text = await res.text();
   const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
   const data = JSON.parse(jsonText);
 
   const cols = data.table.cols.map(c => c.label);
   const rows = data.table.rows;
 
-  const out = rows.map(r => {
+  return rows.map(r => {
     const obj = {};
     r.c?.forEach((cell, i) => {
       const key = cols[i] || `COL_${i}`;
@@ -80,31 +65,25 @@ async function fetchSheetRows(){
     });
     return obj;
   });
-
-  return out;
 }
 
 /* =========================
    BUILD BLOCKS
 ========================= */
-
 function buildBlocks(rows){
-  // Filtrado: Activo (col F) + TV ACTIVO (col L)
   const valid = rows.filter(r => {
     const activo = isYes(r["Activo"]);
     const tvActivoCell = normalize(r["TV ACTIVO"]);
-    const tvActivo = tvActivoCell === "" ? true : isYes(tvActivoCell); // vacío => mostrar
+    const tvActivo = tvActivoCell === "" ? true : isYes(tvActivoCell);
     return activo && tvActivo && normalize(r["Producto"]);
   });
 
-  // Detectar promos
   const promos = valid.filter(r => {
     const promoCol = normalize(r["Promo"]);
-    const tvBloque = upper(normalize(r["TV BLOQUE"]));
+    const tvBloque = upper(r["TV BLOQUE"]);
     return promoCol !== "" || tvBloque === "PROMO";
   });
 
-  // Agrupar por categoría para menú normal
   const byCat = new Map();
   for(const r of valid){
     const cat = normalize(r["Categoria"]) || "OTROS";
@@ -112,17 +91,14 @@ function buildBlocks(rows){
     byCat.get(cat).push(r);
   }
 
-  // Orden interno items
   for(const [cat, arr] of byCat){
     arr.sort((a,b) => {
-      // primero TV ORDEN si existe, sino Orden
       const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
       const ob = toNumber(b["TV ORDEN"], toNumber(b["Orden"], 999999));
       return oa - ob;
     });
   }
 
-  // Crear bloques
   const blocks = [];
 
   if(promos.length){
@@ -135,32 +111,17 @@ function buildBlocks(rows){
     });
   }
 
-  // Categorías (sin duplicar PROMOS)
-  let cats = Array.from(byCat.keys());
-
-  if(CATEGORY_ORDER.length){
-    const order = CATEGORY_ORDER.map(c => c.toLowerCase());
-    cats.sort((a,b) => {
-      const ia = order.indexOf(a.toLowerCase());
-      const ib = order.indexOf(b.toLowerCase());
-      return (ia === -1 ? 9999 : ia) - (ib === -1 ? 9999 : ib);
-    });
-  } else {
-    cats.sort((a,b) => a.localeCompare(b, "es"));
-  }
-
+  const cats = Array.from(byCat.keys()).sort((a,b) => a.localeCompare(b, "es"));
   for(const cat of cats){
-    const arr = byCat.get(cat);
-    // si querés, podés excluir ciertas categorías de TV con TV BLOQUE, pero por ahora mostramos todo
     blocks.push({
       kind: "MENU",
       badge: "MENÚ",
       title: cat,
-      items: arr.map(r => rowToItem(r, false))
+      items: byCat.get(cat).map(r => rowToItem(r, false))
     });
   }
 
-  // Paginar bloques con muchos items
+  // Paginar si una categoría tiene muchos items
   const paged = [];
   for(const b of blocks){
     if(b.items.length <= MAX_ITEMS){
@@ -168,12 +129,10 @@ function buildBlocks(rows){
     } else {
       let page = 1;
       for(let i=0; i<b.items.length; i += MAX_ITEMS){
-        const slice = b.items.slice(i, i + MAX_ITEMS);
         paged.push({
           ...b,
-          title: b.title,
-          badge: b.badge + ` ${page}`,
-          items: slice
+          badge: b.kind === "PROMO" ? "PROMOS" : `MENÚ ${page}`,
+          items: b.items.slice(i, i + MAX_ITEMS)
         });
         page++;
       }
@@ -183,13 +142,15 @@ function buildBlocks(rows){
   return paged;
 }
 
-function upper(s){ return normalize(s).toUpperCase(); }
-
 function rowToItem(r, isPromo){
   const nombre = normalize(r["Producto"]);
   const desc = normalize(r["Descripcion"]) || normalize(r["TV DESCRIPCION"]);
 
-  // Precio: TV PRECIO TEXTO > Precio Promo (si es promo) > Precio
+  // Imagen: tu columna Imagen (ej: "empanada.jpg") => img/empanada.jpg
+  const imgName = normalize(r["Imagen"]);
+  const imgSrc = imgName ? `img/${imgName}` : "";
+
+  // Precio: TV PRECIO TEXTO > Precio Promo (si promo) > Precio
   let priceText = normalize(r["TV PRECIO TEXTO"]);
   if(!priceText){
     if(isPromo){
@@ -200,43 +161,50 @@ function rowToItem(r, isPromo){
     }
   }
 
-  const tag = isPromo ? "PROMO" : "";
-  return { nombre, desc, priceText, tag, isPromo };
+  return { nombre, desc, priceText, isPromo, imgSrc };
 }
 
 /* =========================
    RENDER + ROTATION
 ========================= */
-
 let blocks = [];
 let idx = 0;
 let rotateTimer = null;
-let refreshTimer = null;
 
 function renderBlock(block){
   const itemsEl = $("items");
   const badgeEl = $("blockBadge");
   const titleEl = $("blockTitle");
 
-  // Badge estilo promo
-  if(block.kind === "PROMO"){
-    badgeEl.style.background = "linear-gradient(90deg, var(--rojo), rgba(195,56,47,.78))";
-  } else {
-    badgeEl.style.background = "linear-gradient(90deg, var(--azul), rgba(31,63,94,.78))";
-  }
+  badgeEl.style.background = block.kind === "PROMO"
+    ? "linear-gradient(90deg, var(--rojo), rgba(195,56,47,.78))"
+    : "linear-gradient(90deg, var(--azul), rgba(31,63,94,.78))";
 
   badgeEl.textContent = block.badge;
   titleEl.textContent = block.title;
 
-  // Animación suave
   itemsEl.classList.remove("fade-in");
   itemsEl.classList.add("fade-out");
 
   setTimeout(() => {
     itemsEl.innerHTML = "";
+
     for(const it of block.items){
       const row = document.createElement("div");
       row.className = "item" + (it.isPromo ? " promo" : "");
+
+      const imgBox = document.createElement("div");
+      imgBox.className = "item-img";
+      if(it.imgSrc){
+        const img = document.createElement("img");
+        img.src = it.imgSrc;
+        img.alt = it.nombre;
+        img.loading = "eager";
+        img.onerror = () => { imgBox.innerHTML = " "; }; // si falta el archivo, no rompe
+        imgBox.appendChild(img);
+      } else {
+        imgBox.innerHTML = " ";
+      }
 
       const left = document.createElement("div");
       left.className = "item-left";
@@ -253,10 +221,12 @@ function renderBlock(block){
       left.appendChild(desc);
 
       const right = document.createElement("div");
-      if(it.tag){
+      right.className = "right";
+
+      if(it.isPromo){
         const tag = document.createElement("span");
         tag.className = "tag";
-        tag.textContent = it.tag;
+        tag.textContent = "PROMO";
         right.appendChild(tag);
       }
 
@@ -265,14 +235,16 @@ function renderBlock(block){
       price.textContent = it.priceText || "";
       right.appendChild(price);
 
+      row.appendChild(imgBox);
       row.appendChild(left);
       row.appendChild(right);
+
       itemsEl.appendChild(row);
     }
 
     itemsEl.classList.remove("fade-out");
     itemsEl.classList.add("fade-in");
-  }, 260);
+  }, 240);
 }
 
 function startRotation(){
@@ -308,16 +280,20 @@ async function loadAndBuild(){
     console.error(err);
     $("status").textContent = "Error leyendo Google Sheets";
     $("blockBadge").textContent = "ERROR";
-    $("blockTitle").textContent = "No se pudo leer el Sheet";
-    $("items").innerHTML = "<div style='padding:18px;font-size:22px;opacity:.8'>Asegurate de que el Sheet esté publicado / accesible.</div>";
+    $("blockTitle").textContent = "NO SE PUDO LEER EL SHEET";
+    $("items").innerHTML =
+      "<div style='padding:18px;font-size:22px;opacity:.85;line-height:1.4'>" +
+      "1) Abrí el Google Sheet<br/>" +
+      "2) Compartir → <b>Cualquier persona con el enlace</b> → <b>Lector</b><br/>" +
+      "o Archivo → <b>Publicar en la web</b><br/><br/>" +
+      "<span style='opacity:.75'>Detalle:</span> " + (err?.message || "sin detalle") +
+      "</div>";
   }
 }
 
-/* =========================
-   INIT
-========================= */
+/* INIT */
 setClock();
 setInterval(setClock, 10_000);
 
 loadAndBuild();
-refreshTimer = setInterval(loadAndBuild, REFRESH_MS);
+setInterval(loadAndBuild, 60_000);
