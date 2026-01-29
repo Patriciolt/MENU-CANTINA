@@ -7,8 +7,9 @@
   --radius:30px;
   --sombra: 0 22px 70px rgba(0,0,0,.22);
 
-  /* watermark */
-  --wm-op: .12;
+  /* más visible */
+  --wm-op: .22;
+  --pattern-op: .05;
 }
 
 *{ box-sizing:border-box; }
@@ -42,42 +43,55 @@ body{
   100%{ transform: translate(-1.5%, -1%); }
 }
 
-/* === OPCIÓN C (premium):
-   Isotipo recortado (img/isotipo.png). Si no existe, JS cae a logo.png.
-   Integrado con blend + máscara. */
+/* Pattern de marca (sutil pero se nota) */
+.tv-logo-pattern{
+  position:absolute; inset:0;
+  background-image:url("img/logo.png");
+  background-repeat: repeat;
+  background-size: 240px;
+  opacity: var(--pattern-op);
+  transform: rotate(-10deg);
+  filter: saturate(1.05) contrast(1.02);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: radial-gradient(circle at 70% 55%, rgba(0,0,0,.75), transparent 70%);
+          mask-image: radial-gradient(circle at 70% 55%, rgba(0,0,0,.75), transparent 70%);
+}
+
+/* Logo grande MUY integrado (visible) */
 .tv-logo-watermark{
   position:absolute; inset:0;
-  background-image:url("img/isotipo.png");
+  background-image:url("img/logo.png");
   background-repeat:no-repeat;
   background-position: 82% 56%;
-  background-size: min(58vh, 58vw);
+  background-size: min(70vh, 70vw);
   opacity: var(--wm-op);
   transform: rotate(-7deg);
-  filter: saturate(1.1) contrast(1.06);
+  filter: saturate(1.12) contrast(1.08);
   mix-blend-mode: multiply;
 
-  -webkit-mask-image: radial-gradient(circle at 80% 55%, rgba(0,0,0,1) 0%, rgba(0,0,0,.55) 56%, transparent 80%);
-          mask-image: radial-gradient(circle at 80% 55%, rgba(0,0,0,1) 0%, rgba(0,0,0,.55) 56%, transparent 80%);
+  /* máscara menos agresiva para que se vea bien */
+  -webkit-mask-image: radial-gradient(circle at 80% 55%, rgba(0,0,0,1) 0%, rgba(0,0,0,.72) 55%, rgba(0,0,0,.20) 70%, transparent 85%);
+          mask-image: radial-gradient(circle at 80% 55%, rgba(0,0,0,1) 0%, rgba(0,0,0,.72) 55%, rgba(0,0,0,.20) 70%, transparent 85%);
 }
-/* halo suave para “integrar” */
 .tv-logo-watermark::after{
   content:"";
   position:absolute; inset:0;
   background:
-    radial-gradient(820px 600px at 78% 55%, rgba(31,63,94,.20), transparent 66%),
-    radial-gradient(820px 600px at 84% 60%, rgba(195,56,47,.16), transparent 68%);
-  filter: blur(16px);
-  opacity:.85;
+    radial-gradient(900px 680px at 78% 55%, rgba(31,63,94,.24), transparent 68%),
+    radial-gradient(900px 680px at 84% 60%, rgba(195,56,47,.20), transparent 70%);
+  filter: blur(18px);
+  opacity:.95;
   animation: haloPulse 8.5s ease-in-out infinite;
 }
 @keyframes haloPulse{
   0%,100%{ transform: translate(0,0); opacity:.75; }
-  50%{ transform: translate(-1.2%, .6%); opacity:.95; }
+  50%{ transform: translate(-1.2%, .6%); opacity:.98; }
 }
 
 .tv-overlay{
   position:absolute; inset:0;
-  background: linear-gradient(180deg, rgba(255,255,255,.46), rgba(255,255,255,.62));
+  /* un poquito menos blanco para que el logo se note */
+  background: linear-gradient(180deg, rgba(255,255,255,.36), rgba(255,255,255,.52));
 }
 
 /* Layout */
@@ -134,7 +148,11 @@ body{
 }
 
 /* Card */
-.tv-content{ flex:1; display:flex; }
+.tv-content{
+  flex:1;
+  display:flex;
+  perspective: 1200px;  /* para el flip 3D */
+}
 
 .promo-card{
   width:100%;
@@ -147,7 +165,9 @@ body{
   grid-template-columns: 1.25fr 1fr;
   min-height: 0;
   position:relative;
+  transform-style: preserve-3d;
   transform: translateZ(0);
+  --dir: 1; /* 1 o -1 */
 }
 
 /* Shimmer */
@@ -168,7 +188,7 @@ body{
   100%{ left:120%; opacity:.0; }
 }
 
-/* Media (imagen) */
+/* Media */
 .promo-media{
   position:relative;
   background: rgba(31,63,94,.06);
@@ -180,7 +200,6 @@ body{
   object-fit:cover;
   display:block;
   transform: scale(1.03);
-  /* Ken burns suave permanente */
   animation: kenburns 18s ease-in-out infinite alternate;
 }
 @keyframes kenburns{
@@ -188,7 +207,6 @@ body{
   to{ transform: scale(1.08) translateX(-1.4%); }
 }
 
-/* Overlay */
 .promo-media-overlay{
   position:absolute; inset:0;
   background:
@@ -197,7 +215,7 @@ body{
     radial-gradient(900px 700px at 70% 70%, rgba(195,56,47,.14), transparent 65%);
 }
 
-/* Reveal cinematográfico (se dispara en cada cambio) */
+/* Reveal cinematográfico */
 .promo-media-reveal{
   position:absolute; inset:-10%;
   background: linear-gradient(120deg, rgba(255,255,255,.88), rgba(255,255,255,.12) 45%, rgba(255,255,255,0));
@@ -215,7 +233,7 @@ body{
   100%{ transform: translateX(130%) rotate(8deg); opacity:0; }
 }
 
-/* Imagen entra “integrada” (mask + zoom + slide) */
+/* Entrada de imagen */
 .media-enter img{
   animation:
     imgIn 900ms cubic-bezier(.22,.75,.18,1) both,
@@ -223,7 +241,7 @@ body{
 }
 @keyframes imgIn{
   0%{
-    transform: scale(1.12) translateX(3%);
+    transform: scale(1.14) translateX(3%);
     filter: blur(2px) saturate(.95);
     clip-path: inset(0 0 0 18% round 26px);
     opacity:.0;
@@ -365,30 +383,59 @@ body{
 .dot-blue{ background: var(--azul); }
 .dot-red{ background: var(--rojo); }
 
-/* ==== Transición entre promos: slide + fade (pro) ==== */
-.fade-out{ animation: cardOut 520ms cubic-bezier(.2,.8,.2,1) forwards; }
-.fade-in{ animation: cardIn  620ms cubic-bezier(.2,.8,.2,1) forwards; }
+/* =========================
+   TRANSICIONES PRO:
+   1) FLIP CARD + SLIDE
+   2) PUNCH ZOOM del precio
+========================= */
+.flip-out{ animation: flipOut 560ms cubic-bezier(.2,.8,.2,1) forwards; }
+.flip-in{  animation: flipIn  680ms cubic-bezier(.2,.8,.2,1) forwards; }
 
-.promo-card{ --dir: 1; } /* 1 o -1 */
-@keyframes cardOut{
-  from{ opacity:1; transform: translateX(0) translateY(0); filter: blur(0); }
-  to{ opacity:0; transform: translateX(calc(var(--dir) * -26px)) translateY(10px); filter: blur(1px); }
+@keyframes flipOut{
+  0%{
+    opacity:1;
+    transform: translateX(0) rotateY(0deg) translateZ(0);
+    filter: blur(0);
+  }
+  100%{
+    opacity:0;
+    transform: translateX(calc(var(--dir) * -24px)) rotateY(calc(var(--dir) * -18deg)) translateZ(-40px);
+    filter: blur(1px);
+  }
 }
-@keyframes cardIn{
-  from{ opacity:0; transform: translateX(calc(var(--dir) * 26px)) translateY(-8px); filter: blur(1px); }
-  to{ opacity:1; transform: translateX(0) translateY(0); filter: blur(0); }
+@keyframes flipIn{
+  0%{
+    opacity:0;
+    transform: translateX(calc(var(--dir) * 24px)) rotateY(calc(var(--dir) * 18deg)) translateZ(-40px);
+    filter: blur(1px);
+  }
+  100%{
+    opacity:1;
+    transform: translateX(0) rotateY(0deg) translateZ(0);
+    filter: blur(0);
+  }
 }
 
 /* Texto entra escalonado */
 .text-enter #promoTitle{ animation: textUp .55s .06s cubic-bezier(.2,.8,.2,1) both; }
 .text-enter #promoDesc{  animation: textUp .55s .12s cubic-bezier(.2,.8,.2,1) both; }
 .text-enter #oldPrice{   animation: textUp .55s .18s cubic-bezier(.2,.8,.2,1) both; }
-.text-enter #promoPrice{ animation: textUp .55s .22s cubic-bezier(.2,.8,.2,1) both; }
 .text-enter #promoNote{  animation: textUp .55s .26s cubic-bezier(.2,.8,.2,1) both; }
 
 @keyframes textUp{
   from{ opacity:0; transform: translateY(12px); }
   to{ opacity:1; transform: translateY(0); }
+}
+
+/* PUNCH del precio (zoom + pequeño rebote) */
+.price-punch{
+  animation: pricePunch 620ms cubic-bezier(.2,.9,.2,1) both;
+}
+@keyframes pricePunch{
+  0%{ transform: scale(.82); opacity:0; filter: blur(1px); }
+  45%{ transform: scale(1.10); opacity:1; filter: blur(0); }
+  75%{ transform: scale(.98); }
+  100%{ transform: scale(1); }
 }
 
 /* Responsive */
