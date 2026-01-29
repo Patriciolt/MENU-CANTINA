@@ -4,7 +4,7 @@
   --texto:#101820;
   --fondo:#f4f6f9;
 
-  --wm-op:.075;
+  --wm-op:.10;
   --radius:30px;
   --sombra: 0 22px 70px rgba(0,0,0,.22);
 }
@@ -40,21 +40,27 @@ body{
   100%{ transform: translate(-1.5%, -1%); }
 }
 
-/* Logo integrado como marca de agua (más “pro”) */
+/* === OPCIÓN D: Logo fusionado + halo === */
 .tv-logo-watermark{
   position:absolute; inset:0;
   background-image:url("img/logo.png");
   background-repeat:no-repeat;
-  background-position: 86% 58%;
-  background-size: min(72vh, 72vw);
-  opacity:var(--wm-op);
+  background-position: 84% 58%;
+  background-size: min(74vh, 74vw);
+  opacity: var(--wm-op);
   transform: rotate(-7deg);
-  filter: saturate(1.05) contrast(1.02);
+  filter: saturate(1.12) contrast(1.08);
   mix-blend-mode: multiply;
-  /* máscara para que se funda con el frente y no “pegue” */
-  -webkit-mask-image: radial-gradient(closest-side at 80% 55%, rgba(0,0,0,.95), rgba(0,0,0,.15) 70%, transparent 100%);
-          mask-image: radial-gradient(closest-side at 80% 55%, rgba(0,0,0,.95), rgba(0,0,0,.15) 70%, transparent 100%);
 }
+.tv-logo-watermark::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(700px 520px at 78% 55%, rgba(31,63,94,.20), transparent 65%),
+    radial-gradient(700px 520px at 82% 58%, rgba(195,56,47,.16), transparent 66%);
+  filter: blur(12px);
+}
+
 .tv-overlay{
   position:absolute; inset:0;
   background: linear-gradient(180deg, rgba(255,255,255,.46), rgba(255,255,255,.62));
@@ -186,6 +192,21 @@ body{
   background: linear-gradient(90deg, var(--rojo), rgba(195,56,47,.80));
   border: 1px solid rgba(255,255,255,.22);
   box-shadow: 0 14px 34px rgba(195,56,47,.22);
+  display:inline-flex;
+  align-items:center;
+}
+
+/* % OFF badge dentro de la pill */
+.off-badge{
+  margin-left:10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight:1000;
+  letter-spacing:.06em;
+  background: rgba(255,255,255,.92);
+  color: var(--rojo);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
 }
 
 /* Info */
