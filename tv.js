@@ -38,6 +38,11 @@ function money(v){
   if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
   return t;
 }
+function numberFromMoneyText(txt){
+  const digits = normalize(txt).replace(/[^\d]/g, "");
+  const n = Number(digits);
+  return Number.isFinite(n) ? n : NaN;
+}
 function setClock(){
   const d = new Date();
   $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
@@ -123,16 +128,12 @@ function buildPromos(rows){
     let mainPrice = "";
 
     if(tvPrecio){
-      // Si usás TV PRECIO TEXTO, lo mostramos como principal.
       mainPrice = tvPrecio;
-      // Si además hay precio base numérico, lo mostramos tachado (si existe)
       if(precioBase) oldPrice = precioBase;
     } else if(precioPromo){
-      // Si hay precio promo, mostramos viejo tachado (si existe)
       mainPrice = precioPromo;
       if(precioBase && precioBase !== precioPromo) oldPrice = precioBase;
     } else {
-      // Si no hay promo price, usamos precio base
       mainPrice = precioBase || "";
       oldPrice = "";
     }
@@ -173,6 +174,22 @@ function renderPromo(p){
     const oldEl = $("oldPrice");
     oldEl.textContent = hasPromo ? (p.oldPrice || "") : "";
     oldEl.style.visibility = (hasPromo && p.oldPrice) ? "visible" : "hidden";
+
+    // % OFF automático (solo si ambos precios son numéricos y old > new)
+    const offEl = $("offBadge");
+    if(hasPromo && p.oldPrice && p.mainPrice){
+      const oldN = numberFromMoneyText(p.oldPrice);
+      const newN = numberFromMoneyText(p.mainPrice);
+      if(Number.isFinite(oldN) && Number.isFinite(newN) && oldN > 0 && newN > 0 && oldN > newN){
+        const off = Math.round(((oldN - newN) / oldN) * 100);
+        offEl.textContent = `-${off}%`;
+        offEl.style.display = "inline-block";
+      } else {
+        offEl.style.display = "none";
+      }
+    } else {
+      offEl.style.display = "none";
+    }
 
     // Imagen
     if(hasPromo && p.imgSrc){
