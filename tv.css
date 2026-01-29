@@ -4,16 +4,22 @@
   --texto:#101820;
   --fondo:#f4f6f9;
 
-  --safe: clamp(14px, 2.6vw, 40px);
+  --safe: clamp(14px, 2.2vw, 34px);
 
   --radius:30px;
   --sombra: 0 22px 70px rgba(0,0,0,.22);
 
-  --wm-op: .58;
-  --pattern-op: .12;
+  --wm-op: .62;
+  --pattern-op: .13;
 
   --accent: var(--rojo);
   --accent2: var(--azul);
+
+  /* control total de sidebar para que NUNCA se pise */
+  --sidebarW: clamp(280px, 22vw, 340px);
+
+  /* QR size adaptable (así entran 3 sin superponer) */
+  --qrSize: clamp(170px, 16vw, 220px);
 }
 
 *{ box-sizing:border-box; }
@@ -87,7 +93,7 @@ body{
   background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.24));
 }
 
-/* Layout */
+/* Layout base */
 .tv{
   position:relative;
   z-index:1;
@@ -95,23 +101,27 @@ body{
   padding: var(--safe);
   display:flex;
   flex-direction:column;
-  gap: 14px;
+  gap: 12px;
 }
 
+/* Header */
 .tv-header{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:18px;
+  gap:14px;
+  min-width:0;
 }
+
 .brand{
   display:flex;
   align-items:center;
-  gap:16px;
+  gap:14px;
+  min-width:0;
 }
 .brand-logo{
-  width:84px;
-  height:84px;
+  width:78px;
+  height:78px;
   object-fit:contain;
   filter: drop-shadow(0 10px 24px rgba(0,0,0,.18));
 }
@@ -119,21 +129,26 @@ body{
   font-family: Montserrat, Inter, system-ui;
   font-weight:900;
   letter-spacing:.04em;
-  font-size:36px;
+  font-size:34px;
   color:var(--azul);
 }
 .brand-sub{
   margin-top:6px;
-  font-size:18px;
+  font-size:16px;
   font-weight:900;
   letter-spacing:.12em;
   color:rgba(16,24,32,.72);
 }
 
+/* ✅ Esta parte es CLAVE: evita superposición */
 .header-right{
   display:flex;
   align-items:center;
-  gap:12px;
+  justify-content:flex-end;
+  gap:10px;
+  min-width:0;
+  max-width: 56%;
+  flex-wrap: nowrap; /* siempre en una línea */
 }
 
 /* CHIPS */
@@ -149,34 +164,40 @@ body{
   font-weight:950;
   color: var(--azul);
   white-space:nowrap;
-}
-.chip.weather{
-  font-weight:900;
-  color: rgba(16,24,32,.78);
+  min-width: 0;
 }
 
-/* MISMA ALTURA / peso visual que la hora */
 .chip.weather.big{
-  padding: 12px 16px;          /* igual que reloj */
+  padding: 12px 14px;
   border-radius:16px;
-  font-size:22px;              /* más grande y “parejo” */
+  font-size:20px;
   line-height:1;
   background: rgba(255,255,255,.72);
-}
+  color: rgba(16,24,32,.78);
 
-/* emoji y texto alineados */
-.w-emoji{ font-size:22px; line-height:1; }
-.w-text{ font-weight:950; }
+  /* ✅ si el texto es largo: NO invade, se corta */
+  max-width: 380px;
+  overflow:hidden;
+}
+.w-emoji{ font-size:20px; line-height:1; flex:0 0 auto; }
+.w-text{
+  font-weight:950;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width:0;
+}
 
 .clock{
   font-weight:950;
-  font-size:34px;
+  font-size:32px;
   color:var(--azul);
-  padding: 12px 16px;
+  padding: 12px 14px;
   border-radius:16px;
   background: rgba(255,255,255,.72);
   border: 1px solid rgba(31,63,94,.16);
   box-shadow: 0 12px 40px rgba(0,0,0,.10);
+  flex: 0 0 auto;
 }
 
 /* Content */
@@ -186,13 +207,13 @@ body{
   perspective: 1200px;
 }
 
-/* 2 columnas: promo + sidebar */
+/* ✅ 2 columnas: promo + sidebar (sidebar fijo controlado) */
 .layout{
   height:100%;
   min-height:0;
   display:grid;
-  grid-template-columns: 1fr 320px;
-  gap: 18px;
+  grid-template-columns: 1fr var(--sidebarW);
+  gap: 16px;
   align-items:stretch;
 }
 
@@ -212,12 +233,6 @@ body{
   transform-style: preserve-3d;
   transform: translateZ(0);
 }
-
-.promo-card[data-accent="empanadas"]{ --accent: var(--rojo); --accent2: var(--azul); }
-.promo-card[data-accent="sandwichs"]{ --accent: var(--azul); --accent2: var(--rojo); }
-.promo-card[data-accent="papas"]{ --accent: #2a6b3f; --accent2: var(--azul); }
-.promo-card[data-accent="bebidas"]{ --accent: #2b3a55; --accent2: var(--rojo); }
-.promo-card[data-accent="default"]{ --accent: var(--rojo); --accent2: var(--azul); }
 
 /* Wipe */
 .wipe{
@@ -357,11 +372,11 @@ body{
 
 /* Info */
 .promo-info{
-  padding: 26px;
+  padding: 24px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  gap: 18px;
+  gap: 16px;
   background: rgba(255,255,255,.74);
   backdrop-filter: blur(10px);
 }
@@ -369,15 +384,15 @@ body{
 .promo-title{
   font-family: Montserrat, Inter, system-ui;
   font-weight:900;
-  font-size:76px;
+  font-size:74px;
   line-height:1.02;
   letter-spacing:.01em;
   color:var(--texto);
   text-transform:uppercase;
 }
 .promo-desc{
-  margin-top:12px;
-  font-size:26px;
+  margin-top:10px;
+  font-size:24px;
   opacity:.84;
   font-weight:800;
   line-height:1.25;
@@ -388,13 +403,13 @@ body{
   display:flex;
   align-items:flex-end;
   justify-content:space-between;
-  gap:18px;
-  padding-top: 10px;
+  gap:16px;
+  padding-top: 8px;
 }
 .promo-prices{ display:flex; flex-direction:column; gap:10px; }
 .old-price{
   font-weight:950;
-  font-size:30px;
+  font-size:28px;
   color: rgba(16,24,32,.55);
   text-decoration: line-through;
   text-decoration-thickness: 4px;
@@ -404,7 +419,7 @@ body{
 }
 .promo-price{
   font-weight:1000;
-  font-size:64px;
+  font-size:60px;
   color: var(--accent);
   padding: 14px 20px;
   border-radius: 999px;
@@ -415,7 +430,7 @@ body{
   display:inline-block;
 }
 .promo-note{
-  font-size:20px;
+  font-size:18px;
   font-weight:950;
   color: rgba(16,24,32,.72);
   text-align:right;
@@ -426,10 +441,10 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:18px;
+  gap:16px;
   padding-top: 12px;
   border-top: 1px solid rgba(31,63,94,.14);
-  font-size:18px;
+  font-size:16px;
   font-weight:900;
   color: rgba(16,24,32,.78);
 }
@@ -452,28 +467,83 @@ body{
   box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-/* Sidebar QR (TV, no touch) */
+/* Sidebar QR (TV) */
 .tv-sidebar{
   height:100%;
   min-height:0;
   display:flex;
   flex-direction:column;
-  gap: 18px;
+  gap: 14px;
 }
+
+/* ✅ Marco degradé “pro” en cada tarjeta */
 .qr-card{
   flex: 1;
   min-height: 0;
   border-radius: var(--radius);
   background: rgba(255,255,255,.72);
-  border: 1px solid rgba(31,63,94,.16);
-  box-shadow: 0 18px 50px rgba(0,0,0,.12);
   backdrop-filter: blur(10px);
-  padding: 16px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.12);
+  padding: 14px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap: 12px;
+  gap: 10px;
+  position:relative;
+  overflow:hidden;
+}
+.qr-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  padding: 2px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(195,56,47,.65), rgba(31,63,94,.65));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events:none;
+  opacity:.8;
+}
+
+.qr-head{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+.qr-ico{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(31,63,94,.10);
+  border: 1px solid rgba(31,63,94,.12);
+  color: var(--azul);
+  font-weight:1000;
+  flex:0 0 auto;
+}
+.qr-ico--wapp{
+  background: rgba(42,107,63,.12);
+  border-color: rgba(42,107,63,.18);
+  color:#2a6b3f;
+}
+.qr-ico--ig{
+  background: rgba(195,56,47,.10);
+  border-color: rgba(195,56,47,.16);
+  color: var(--rojo);
+}
+.qr-ico--menu{
+  background: rgba(31,63,94,.10);
+  border-color: rgba(31,63,94,.16);
+  color: var(--azul);
 }
 
 /* TITULOS QR */
@@ -481,29 +551,37 @@ body{
   font-family: Montserrat, Inter, system-ui;
   font-weight:900;
   letter-spacing:.10em;
-  font-size:14px;
-  color: rgba(16,24,32,.78);
+  font-size:13px;
+  color: rgba(16,24,32,.80);
   text-align:center;
+  white-space:nowrap;
 }
 
 /* Menú MÁS GRANDE */
 .qr-title--big{
-  font-size:18px;
+  font-size:17px;
   letter-spacing:.12em;
-  color: rgba(16,24,32,.86);
 }
 
+/* ✅ QR con tamaño controlado (clamp) */
 .qr{
-  width: 240px;
-  height: 240px;
+  width: var(--qrSize);
+  height: var(--qrSize);
   border-radius: 18px;
   background:#fff;
   border: 1px solid rgba(31,63,94,.12);
+  box-shadow: 0 10px 28px rgba(0,0,0,.10);
 }
+
 .qr-sub{
-  font-size:14px;
+  font-size:13px;
   font-weight:950;
   opacity:.78;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  max-width: 95%;
 }
 
 /* Footer */
@@ -511,7 +589,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  font-size:18px;
+  font-size:16px;
   opacity:.9;
 }
 .dot{
@@ -523,7 +601,7 @@ body{
 .dot-blue{ background: var(--azul); }
 .dot-red{ background: var(--rojo); }
 
-/* Anim de texto + precio */
+/* Animaciones texto + precio */
 .text-enter #promoTitle{ animation: textUp .55s .06s cubic-bezier(.2,.8,.2,1) both; }
 .text-enter #promoDesc{  animation: textUp .55s .12s cubic-bezier(.2,.8,.2,1) both; }
 .text-enter #oldPrice{   animation: textUp .55s .18s cubic-bezier(.2,.8,.2,1) both; }
@@ -540,9 +618,22 @@ body{
   100%{ transform: scale(1); }
 }
 
-/* Responsive */
+/* ✅ Anti-superposición en pantallas un poco angostas */
+@media (max-width: 1366px){
+  :root{
+    --sidebarW: 300px;
+    --qrSize: 190px;
+  }
+  .brand-title{ font-size:32px; }
+  .promo-title{ font-size:68px; }
+  .promo-price{ font-size:56px; }
+  .chip.weather.big{ max-width: 320px; font-size:18px; }
+  .clock{ font-size:30px; }
+}
+
+/* Mobile / muy chico: pasa a 1 columna */
 @media (max-width: 1100px){
   .layout{ grid-template-columns: 1fr; }
   .promo-card{ grid-template-columns: 1fr; }
-  .qr{ width: 220px; height: 220px; }
+  .header-right{ max-width: 100%; }
 }
