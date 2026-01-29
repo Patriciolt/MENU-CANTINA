@@ -32,8 +32,8 @@
       <div class="header-right">
         <div class="chip date" id="dateChip">--</div>
 
-        <!-- CLIMA visible siempre -->
-        <div class="chip weather" id="weatherChip" title="Clima (Open-Meteo)">
+        <!-- CLIMA con MISMA ALTURA que la hora -->
+        <div class="chip weather big" id="weatherChip" title="Clima (Open-Meteo)">
           <span class="w-emoji" id="wEmoji">⛅</span>
           <span class="w-text" id="wText">--° · -- · Lluvia --%</span>
         </div>
@@ -49,7 +49,6 @@
           <div class="wipe" id="wipe" aria-hidden="true"></div>
 
           <div class="promo-media" id="promoMedia">
-            <!-- Crossfade PRO -->
             <img id="promoImgA" class="promo-img is-active" alt="" />
             <img id="promoImgB" class="promo-img" alt="" />
 
@@ -87,12 +86,18 @@
           </div>
         </div>
 
-        <!-- SIDEBAR TV: SOLO 2 QR (sin botones) -->
+        <!-- SIDEBAR TV: SOLO QRs -->
         <aside class="tv-sidebar">
-          <div class="qr-card">
-            <div class="qr-title">ESCANEÁ EL MENÚ</div>
+          <div class="qr-card qr-card--menu">
+            <div class="qr-title qr-title--big">ESCANEÁ EL MENÚ</div>
             <img id="qrMenu" class="qr" alt="QR Menú" />
             <div class="qr-sub">adputcantina.com.ar</div>
+          </div>
+
+          <div class="qr-card">
+            <div class="qr-title">PEDIDOS POR WHATSAPP</div>
+            <img id="qrWapp" class="qr" alt="QR WhatsApp" />
+            <div class="qr-sub" id="wappLine">+54 9 3816 83-6838</div>
           </div>
 
           <div class="qr-card">
