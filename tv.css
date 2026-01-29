@@ -15,11 +15,11 @@
   --accent: var(--rojo);
   --accent2: var(--azul);
 
-  /* control total de sidebar para que NUNCA se pise */
-  --sidebarW: clamp(280px, 22vw, 340px);
+  /* sidebar fijo */
+  --sidebarW: clamp(300px, 22vw, 360px);
 
-  /* QR size adaptable (así entran 3 sin superponer) */
-  --qrSize: clamp(170px, 16vw, 220px);
+  /* ✅ QR tamaño por ALTURA (TV), no por ancho */
+  --qrSize: clamp(120px, 12vh, 175px);
 }
 
 *{ box-sizing:border-box; }
@@ -140,7 +140,6 @@ body{
   color:rgba(16,24,32,.72);
 }
 
-/* ✅ Esta parte es CLAVE: evita superposición */
 .header-right{
   display:flex;
   align-items:center;
@@ -148,10 +147,9 @@ body{
   gap:10px;
   min-width:0;
   max-width: 56%;
-  flex-wrap: nowrap; /* siempre en una línea */
+  flex-wrap: nowrap;
 }
 
-/* CHIPS */
 .chip{
   display:flex;
   align-items:center;
@@ -174,8 +172,6 @@ body{
   line-height:1;
   background: rgba(255,255,255,.72);
   color: rgba(16,24,32,.78);
-
-  /* ✅ si el texto es largo: NO invade, se corta */
   max-width: 380px;
   overflow:hidden;
 }
@@ -207,7 +203,6 @@ body{
   perspective: 1200px;
 }
 
-/* ✅ 2 columnas: promo + sidebar (sidebar fijo controlado) */
 .layout{
   height:100%;
   min-height:0;
@@ -467,7 +462,7 @@ body{
   box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-/* Sidebar QR (TV) */
+/* ✅ SIDEBAR: alturas 100% correctas */
 .tv-sidebar{
   height:100%;
   min-height:0;
@@ -476,23 +471,28 @@ body{
   gap: 14px;
 }
 
-/* ✅ Marco degradé “pro” en cada tarjeta */
+/* ✅ Cada tarjeta ocupa EXACTAMENTE 1/3 del sidebar (menos gaps) */
 .qr-card{
-  flex: 1;
+  flex: 0 0 calc((100% - 28px) / 3);
   min-height: 0;
+
   border-radius: var(--radius);
   background: rgba(255,255,255,.72);
   backdrop-filter: blur(10px);
   box-shadow: 0 18px 50px rgba(0,0,0,.12);
-  padding: 14px;
+
+  padding: 12px;
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
-  gap: 10px;
+  justify-content:flex-start; /* ✅ empieza arriba, no flota */
+  gap: 8px;
+
   position:relative;
   overflow:hidden;
 }
+
+/* Marco degradé */
 .qr-card::before{
   content:"";
   position:absolute;
@@ -515,6 +515,8 @@ body{
   align-items:center;
   justify-content:center;
   gap:10px;
+  margin-top: 2px;
+  padding: 0 6px;
 }
 
 .qr-ico{
@@ -546,35 +548,45 @@ body{
   color: var(--azul);
 }
 
-/* TITULOS QR */
+/* ✅ TITULOS QR: ahora hacen wrap y no se pisan */
 .qr-title{
   font-family: Montserrat, Inter, system-ui;
   font-weight:900;
   letter-spacing:.10em;
-  font-size:13px;
-  color: rgba(16,24,32,.80);
+  font-size:12px;
+  line-height:1.15;
+
+  color: rgba(16,24,32,.82);
   text-align:center;
-  white-space:nowrap;
+
+  white-space: normal;           /* ✅ NO nowrap */
+  word-break: break-word;
+  max-width: 95%;
 }
 
-/* Menú MÁS GRANDE */
+/* Menú MÁS GRANDE (pero sin romper layout) */
 .qr-title--big{
-  font-size:17px;
+  font-size:16px;
   letter-spacing:.12em;
+  line-height:1.10;
 }
 
-/* ✅ QR con tamaño controlado (clamp) */
+/* ✅ QR: entra SIEMPRE en el alto disponible */
 .qr{
-  width: var(--qrSize);
-  height: var(--qrSize);
+  width: min(var(--qrSize), 92%);
+  height: min(var(--qrSize), 92%);
+
   border-radius: 18px;
   background:#fff;
   border: 1px solid rgba(31,63,94,.12);
   box-shadow: 0 10px 28px rgba(0,0,0,.10);
+
+  margin-top: 2px;
 }
 
+/* ✅ Subtexto compacto */
 .qr-sub{
-  font-size:13px;
+  font-size:12px;
   font-weight:950;
   opacity:.78;
   text-align:center;
@@ -582,6 +594,7 @@ body{
   overflow:hidden;
   text-overflow: ellipsis;
   max-width: 95%;
+  margin-top: 2px;
 }
 
 /* Footer */
@@ -618,11 +631,11 @@ body{
   100%{ transform: scale(1); }
 }
 
-/* ✅ Anti-superposición en pantallas un poco angostas */
+/* Anti-superposición para pantallas más chicas */
 @media (max-width: 1366px){
   :root{
-    --sidebarW: 300px;
-    --qrSize: 190px;
+    --sidebarW: 310px;
+    --qrSize: clamp(115px, 11vh, 160px);
   }
   .brand-title{ font-size:32px; }
   .promo-title{ font-size:68px; }
@@ -631,7 +644,6 @@ body{
   .clock{ font-size:30px; }
 }
 
-/* Mobile / muy chico: pasa a 1 columna */
 @media (max-width: 1100px){
   .layout{ grid-template-columns: 1fr; }
   .promo-card{ grid-template-columns: 1fr; }
