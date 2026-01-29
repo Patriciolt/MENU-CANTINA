@@ -4,9 +4,11 @@
   --texto:#101820;
   --fondo:#f4f6f9;
 
-  --wm-op:.10;
   --radius:30px;
   --sombra: 0 22px 70px rgba(0,0,0,.22);
+
+  /* watermark */
+  --wm-op: .12;
 }
 
 *{ box-sizing:border-box; }
@@ -19,7 +21,7 @@ body{
   overflow:hidden;
 }
 
-/* Fondo pro animado */
+/* Fondo animado */
 .tv-bg{
   position:fixed; inset:0;
   background: linear-gradient(180deg, #ffffff 0%, var(--fondo) 55%, #ffffff 100%);
@@ -40,25 +42,37 @@ body{
   100%{ transform: translate(-1.5%, -1%); }
 }
 
-/* === OPCIÓN D: Logo fusionado + halo === */
+/* === OPCIÓN C (premium):
+   Isotipo recortado (img/isotipo.png). Si no existe, JS cae a logo.png.
+   Integrado con blend + máscara. */
 .tv-logo-watermark{
   position:absolute; inset:0;
-  background-image:url("img/logo.png");
+  background-image:url("img/isotipo.png");
   background-repeat:no-repeat;
-  background-position: 84% 58%;
-  background-size: min(74vh, 74vw);
+  background-position: 82% 56%;
+  background-size: min(58vh, 58vw);
   opacity: var(--wm-op);
   transform: rotate(-7deg);
-  filter: saturate(1.12) contrast(1.08);
+  filter: saturate(1.1) contrast(1.06);
   mix-blend-mode: multiply;
+
+  -webkit-mask-image: radial-gradient(circle at 80% 55%, rgba(0,0,0,1) 0%, rgba(0,0,0,.55) 56%, transparent 80%);
+          mask-image: radial-gradient(circle at 80% 55%, rgba(0,0,0,1) 0%, rgba(0,0,0,.55) 56%, transparent 80%);
 }
+/* halo suave para “integrar” */
 .tv-logo-watermark::after{
   content:"";
   position:absolute; inset:0;
   background:
-    radial-gradient(700px 520px at 78% 55%, rgba(31,63,94,.20), transparent 65%),
-    radial-gradient(700px 520px at 82% 58%, rgba(195,56,47,.16), transparent 66%);
-  filter: blur(12px);
+    radial-gradient(820px 600px at 78% 55%, rgba(31,63,94,.20), transparent 66%),
+    radial-gradient(820px 600px at 84% 60%, rgba(195,56,47,.16), transparent 68%);
+  filter: blur(16px);
+  opacity:.85;
+  animation: haloPulse 8.5s ease-in-out infinite;
+}
+@keyframes haloPulse{
+  0%,100%{ transform: translate(0,0); opacity:.75; }
+  50%{ transform: translate(-1.2%, .6%); opacity:.95; }
 }
 
 .tv-overlay{
@@ -119,7 +133,7 @@ body{
   box-shadow: 0 12px 40px rgba(0,0,0,.10);
 }
 
-/* Card promo (1 por pantalla) */
+/* Card */
 .tv-content{ flex:1; display:flex; }
 
 .promo-card{
@@ -133,9 +147,10 @@ body{
   grid-template-columns: 1.25fr 1fr;
   min-height: 0;
   position:relative;
+  transform: translateZ(0);
 }
 
-/* Shimmer pro */
+/* Shimmer */
 .shimmer::after{
   content:"";
   position:absolute;
@@ -153,7 +168,7 @@ body{
   100%{ left:120%; opacity:.0; }
 }
 
-/* Imagen grande con Ken Burns */
+/* Media (imagen) */
 .promo-media{
   position:relative;
   background: rgba(31,63,94,.06);
@@ -165,13 +180,15 @@ body{
   object-fit:cover;
   display:block;
   transform: scale(1.03);
-  animation: kenburns 16s ease-in-out infinite alternate;
+  /* Ken burns suave permanente */
+  animation: kenburns 18s ease-in-out infinite alternate;
 }
 @keyframes kenburns{
   from{ transform: scale(1.03) translateX(0); }
-  to{ transform: scale(1.08) translateX(-1.2%); }
+  to{ transform: scale(1.08) translateX(-1.4%); }
 }
 
+/* Overlay */
 .promo-media-overlay{
   position:absolute; inset:0;
   background:
@@ -180,6 +197,46 @@ body{
     radial-gradient(900px 700px at 70% 70%, rgba(195,56,47,.14), transparent 65%);
 }
 
+/* Reveal cinematográfico (se dispara en cada cambio) */
+.promo-media-reveal{
+  position:absolute; inset:-10%;
+  background: linear-gradient(120deg, rgba(255,255,255,.88), rgba(255,255,255,.12) 45%, rgba(255,255,255,0));
+  transform: translateX(-120%) rotate(8deg);
+  opacity: 0;
+  pointer-events:none;
+}
+.media-enter .promo-media-reveal{
+  opacity: 1;
+  animation: revealSweep 1.05s cubic-bezier(.22,.75,.18,1) forwards;
+}
+@keyframes revealSweep{
+  0%{ transform: translateX(-120%) rotate(8deg); opacity:.0; }
+  20%{ opacity:.45; }
+  100%{ transform: translateX(130%) rotate(8deg); opacity:0; }
+}
+
+/* Imagen entra “integrada” (mask + zoom + slide) */
+.media-enter img{
+  animation:
+    imgIn 900ms cubic-bezier(.22,.75,.18,1) both,
+    kenburns 18s ease-in-out infinite alternate;
+}
+@keyframes imgIn{
+  0%{
+    transform: scale(1.12) translateX(3%);
+    filter: blur(2px) saturate(.95);
+    clip-path: inset(0 0 0 18% round 26px);
+    opacity:.0;
+  }
+  100%{
+    transform: scale(1.03) translateX(0);
+    filter: blur(0) saturate(1);
+    clip-path: inset(0 0 0 0 round 0px);
+    opacity:1;
+  }
+}
+
+/* Pill */
 .promo-pill{
   position:absolute;
   top:18px; left:18px;
@@ -195,8 +252,6 @@ body{
   display:inline-flex;
   align-items:center;
 }
-
-/* % OFF badge dentro de la pill */
 .off-badge{
   margin-left:10px;
   padding: 7px 10px;
@@ -219,8 +274,6 @@ body{
   background: rgba(255,255,255,.72);
   backdrop-filter: blur(10px);
 }
-
-.promo-top{ padding-top: 4px; }
 
 .promo-title{
   font-weight:1000;
@@ -247,11 +300,7 @@ body{
   padding-top: 10px;
 }
 
-.promo-prices{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+.promo-prices{ display:flex; flex-direction:column; gap:10px; }
 
 .old-price{
   font-weight:950;
@@ -299,7 +348,7 @@ body{
 }
 #status{ font-weight:900; }
 
-/* Footer general */
+/* Footer */
 .tv-footer{
   display:flex;
   align-items:center;
@@ -316,17 +365,30 @@ body{
 .dot-blue{ background: var(--azul); }
 .dot-red{ background: var(--rojo); }
 
-/* Transiciones pro */
-.fade-out{ animation: fadeOut .45s ease forwards; }
-.fade-in{ animation: fadeIn .55s ease forwards; }
+/* ==== Transición entre promos: slide + fade (pro) ==== */
+.fade-out{ animation: cardOut 520ms cubic-bezier(.2,.8,.2,1) forwards; }
+.fade-in{ animation: cardIn  620ms cubic-bezier(.2,.8,.2,1) forwards; }
 
-@keyframes fadeOut{
-  from{ opacity:1; transform: translateY(0); filter: blur(0); }
-  to{ opacity:0; transform: translateY(12px); filter: blur(1px); }
+.promo-card{ --dir: 1; } /* 1 o -1 */
+@keyframes cardOut{
+  from{ opacity:1; transform: translateX(0) translateY(0); filter: blur(0); }
+  to{ opacity:0; transform: translateX(calc(var(--dir) * -26px)) translateY(10px); filter: blur(1px); }
 }
-@keyframes fadeIn{
-  from{ opacity:0; transform: translateY(-10px); filter: blur(1px); }
-  to{ opacity:1; transform: translateY(0); filter: blur(0); }
+@keyframes cardIn{
+  from{ opacity:0; transform: translateX(calc(var(--dir) * 26px)) translateY(-8px); filter: blur(1px); }
+  to{ opacity:1; transform: translateX(0) translateY(0); filter: blur(0); }
+}
+
+/* Texto entra escalonado */
+.text-enter #promoTitle{ animation: textUp .55s .06s cubic-bezier(.2,.8,.2,1) both; }
+.text-enter #promoDesc{  animation: textUp .55s .12s cubic-bezier(.2,.8,.2,1) both; }
+.text-enter #oldPrice{   animation: textUp .55s .18s cubic-bezier(.2,.8,.2,1) both; }
+.text-enter #promoPrice{ animation: textUp .55s .22s cubic-bezier(.2,.8,.2,1) both; }
+.text-enter #promoNote{  animation: textUp .55s .26s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes textUp{
+  from{ opacity:0; transform: translateY(12px); }
+  to{ opacity:1; transform: translateY(0); }
 }
 
 /* Responsive */
