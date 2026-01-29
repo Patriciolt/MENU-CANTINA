@@ -4,7 +4,7 @@
   --texto:#101820;
   --fondo:#f4f6f9;
 
-  --wm-op:.08;
+  --wm-op:.075;
   --radius:30px;
   --sombra: 0 22px 70px rgba(0,0,0,.22);
 }
@@ -40,16 +40,20 @@ body{
   100%{ transform: translate(-1.5%, -1%); }
 }
 
-/* Marca de agua con logo */
+/* Logo integrado como marca de agua (más “pro”) */
 .tv-logo-watermark{
   position:absolute; inset:0;
   background-image:url("img/logo.png");
   background-repeat:no-repeat;
-  background-position: 84% 56%;
-  background-size: min(70vh, 70vw);
+  background-position: 86% 58%;
+  background-size: min(72vh, 72vw);
   opacity:var(--wm-op);
-  transform: rotate(-6deg);
-  filter: saturate(1.05);
+  transform: rotate(-7deg);
+  filter: saturate(1.05) contrast(1.02);
+  mix-blend-mode: multiply;
+  /* máscara para que se funda con el frente y no “pegue” */
+  -webkit-mask-image: radial-gradient(closest-side at 80% 55%, rgba(0,0,0,.95), rgba(0,0,0,.15) 70%, transparent 100%);
+          mask-image: radial-gradient(closest-side at 80% 55%, rgba(0,0,0,.95), rgba(0,0,0,.15) 70%, transparent 100%);
 }
 .tv-overlay{
   position:absolute; inset:0;
@@ -120,21 +124,48 @@ body{
   border: 1px solid rgba(31,63,94,.18);
   background: rgba(255,255,255,.78);
   display:grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   min-height: 0;
+  position:relative;
 }
 
-/* Imagen grande */
+/* Shimmer pro */
+.shimmer::after{
+  content:"";
+  position:absolute;
+  top:-20%; left:-60%;
+  width:40%; height:140%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.30), transparent);
+  transform: rotate(18deg);
+  animation: shimmerSweep 7.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes shimmerSweep{
+  0%{ left:-60%; opacity:.0; }
+  15%{ opacity:.55; }
+  40%{ left:120%; opacity:.0; }
+  100%{ left:120%; opacity:.0; }
+}
+
+/* Imagen grande con Ken Burns */
 .promo-media{
   position:relative;
   background: rgba(31,63,94,.06);
+  overflow:hidden;
 }
 .promo-media img{
   width:100%;
   height:100%;
   object-fit:cover;
   display:block;
+  transform: scale(1.03);
+  animation: kenburns 16s ease-in-out infinite alternate;
 }
+@keyframes kenburns{
+  from{ transform: scale(1.03) translateX(0); }
+  to{ transform: scale(1.08) translateX(-1.2%); }
+}
+
 .promo-media-overlay{
   position:absolute; inset:0;
   background:
@@ -142,6 +173,7 @@ body{
     radial-gradient(1200px 700px at 30% 30%, rgba(31,63,94,.18), transparent 60%),
     radial-gradient(900px 700px at 70% 70%, rgba(195,56,47,.14), transparent 65%);
 }
+
 .promo-pill{
   position:absolute;
   top:18px; left:18px;
@@ -163,9 +195,11 @@ body{
   flex-direction:column;
   justify-content:space-between;
   gap: 18px;
-  background: rgba(255,255,255,.70);
+  background: rgba(255,255,255,.72);
   backdrop-filter: blur(10px);
 }
+
+.promo-top{ padding-top: 4px; }
 
 .promo-title{
   font-weight:1000;
@@ -191,6 +225,24 @@ body{
   gap:18px;
   padding-top: 10px;
 }
+
+.promo-prices{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.old-price{
+  font-weight:950;
+  font-size:30px;
+  color: rgba(16,24,32,.55);
+  text-decoration: line-through;
+  text-decoration-thickness: 4px;
+  text-decoration-color: rgba(195,56,47,.55);
+  letter-spacing:.02em;
+  min-height: 1.1em;
+}
+
 .promo-price{
   font-weight:1000;
   font-size:64px;
@@ -198,65 +250,3 @@ body{
   padding: 14px 20px;
   border-radius: 999px;
   border: 2px solid rgba(195,56,47,.38);
-  background: rgba(255,255,255,.86);
-  box-shadow: 0 14px 34px rgba(0,0,0,.10);
-  white-space:nowrap;
-}
-.promo-note{
-  font-size:20px;
-  font-weight:900;
-  color: rgba(16,24,32,.72);
-  text-align:right;
-  line-height:1.2;
-  max-width: 320px;
-}
-
-.promo-footer{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(31,63,94,.14);
-  font-size:18px;
-  font-weight:900;
-  color: rgba(16,24,32,.78);
-}
-#status{ font-weight:900; }
-
-/* Footer general */
-.tv-footer{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  font-size:18px;
-  opacity:.9;
-}
-.dot{
-  display:inline-block;
-  width:12px; height:12px;
-  border-radius:50%;
-  margin-right:10px;
-}
-.dot-blue{ background: var(--azul); }
-.dot-red{ background: var(--rojo); }
-
-/* Transiciones pro */
-.fade-out{ animation: fadeOut .45s ease forwards; }
-.fade-in{ animation: fadeIn .55s ease forwards; }
-
-@keyframes fadeOut{
-  from{ opacity:1; transform: translateY(0); filter: blur(0); }
-  to{ opacity:0; transform: translateY(12px); filter: blur(1px); }
-}
-@keyframes fadeIn{
-  from{ opacity:0; transform: translateY(-10px); filter: blur(1px); }
-  to{ opacity:1; transform: translateY(0); filter: blur(0); }
-}
-
-/* Responsive: si la TV es vertical o chica */
-@media (max-width: 1100px){
-  .promo-card{ grid-template-columns: 1fr; }
-  .promo-title{ font-size:54px; }
-  .promo-price{ font-size:54px; }
-}
