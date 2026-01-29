@@ -4,9 +4,9 @@
 const SHEET_ID = "1c4WYczs2NjwPz0f9aaSZShC-FaU3H9wnUm7FuYd9c6o";
 const SHEET_NAME = "Sheet1";
 
-const REFRESH_MS = 60_000;   // refresca datos
-const ROTATE_MS  = 9_000;    // cambia promo
-const SHUFFLE    = true;     // mezclar promos
+const REFRESH_MS = 60_000;
+const ROTATE_MS  = 9_000;
+const SHUFFLE    = true;
 
 /* =========================
    HELPERS
@@ -33,7 +33,7 @@ function toNumber(v, fallback = 999999){
 function money(v){
   const t = normalize(v);
   if(!t) return "";
-  if(/[a-zA-ZxX]/.test(t)) return t; // "2x1", etc
+  if(/[a-zA-ZxX]/.test(t)) return t;
   const n = toNumber(t, NaN);
   if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
   return t;
@@ -52,6 +52,25 @@ function shuffleInPlace(arr){
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+}
+
+/* =========================
+   PARALLAX LENTO (logo fondo)
+========================= */
+function startParallax(){
+  const wm = document.getElementById("watermark");
+  if(!wm) return;
+
+  let t0 = performance.now();
+  function tick(now){
+    const t = (now - t0) / 1000; // seg
+    // movimiento lento, suave (no mareante)
+    const x = 82 + Math.sin(t * 0.12) * 2.2; // %
+    const y = 56 + Math.cos(t * 0.10) * 1.6; // %
+    wm.style.backgroundPosition = `${x}% ${y}%`;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 /* =========================
@@ -104,8 +123,6 @@ function buildPromos(rows){
 
   const out = promos.map(r => {
     const nombre = normalize(r["Producto"]);
-
-    // No usar "Promo" como descripción
     const desc = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || "";
 
     const promoRaw = normalize(r["Promo"]);
@@ -147,12 +164,18 @@ let promos = [];
 let idx = 0;
 let rotateTimer = null;
 
+function popBadge(){
+  const offEl = $("offBadge");
+  offEl.classList.remove("badge-pop");
+  void offEl.offsetWidth; // reflow
+  offEl.classList.add("badge-pop");
+}
+
 function renderPromo(p, direction = 1){
   const card = $("promoCard");
   const media = $("promoMedia");
   const img = $("promoImg");
 
-  // dirección para el flip/slide
   card.style.setProperty("--dir", String(direction));
 
   // salida flip
@@ -172,20 +195,26 @@ function renderPromo(p, direction = 1){
     oldEl.textContent = hasPromo ? (p.oldPrice || "") : "";
     oldEl.style.visibility = (hasPromo && p.oldPrice) ? "visible" : "hidden";
 
-    // % OFF
+    // % OFF + pop
     const offEl = $("offBadge");
+    let showBadge = false;
+
     if(hasPromo && p.oldPrice && p.mainPrice){
       const oldN = numberFromMoneyText(p.oldPrice);
       const newN = numberFromMoneyText(p.mainPrice);
       if(Number.isFinite(oldN) && Number.isFinite(newN) && oldN > 0 && newN > 0 && oldN > newN){
         const off = Math.round(((oldN - newN) / oldN) * 100);
         offEl.textContent = `-${off}%`;
-        offEl.style.display = "inline-block";
-      } else {
-        offEl.style.display = "none";
+        showBadge = true;
       }
+    }
+
+    if(showBadge){
+      offEl.style.display = "inline-block";
+      popBadge();
     } else {
       offEl.style.display = "none";
+      offEl.classList.remove("badge-pop");
     }
 
     // imagen
@@ -205,19 +234,19 @@ function renderPromo(p, direction = 1){
     card.classList.remove("flip-out");
     card.classList.add("flip-in");
 
-    // animaciones pro: reveal de media + stagger + punch del precio
+    // animaciones pro
     media.classList.remove("media-enter");
     document.body.classList.remove("text-enter");
     $("promoPrice").classList.remove("price-punch");
 
-    void card.offsetWidth; // reflow
+    void card.offsetWidth;
     media.classList.add("media-enter");
     document.body.classList.add("text-enter");
 
-    // punch del precio (ligero delay para que se sienta “en foco”)
+    // punch del precio
     setTimeout(() => {
       $("promoPrice").classList.add("price-punch");
-    }, 180);
+    }, 190);
 
   }, 360);
 }
@@ -235,8 +264,6 @@ function startRotation(){
   rotateTimer = setInterval(() => {
     const prev = idx;
     idx = (idx + 1) % promos.length;
-
-    // alterna dirección para dar vida
     const dir = (prev % 2 === 0) ? 1 : -1;
     renderPromo(promos[idx], dir);
   }, ROTATE_MS);
@@ -269,5 +296,6 @@ async function loadPromos(){
 setClock();
 setInterval(setClock, 10_000);
 
+startParallax();
 loadPromos();
 setInterval(loadPromos, REFRESH_MS);
