@@ -8,11 +8,11 @@ const REFRESH_MS = 60_000;
 const ROTATE_MS  = 9_000;
 const SHUFFLE    = true;
 
-/* QR / Links */
+/* Links */
 const MENU_URL = "https://adputcantina.com.ar/menu.html";
+const INSTAGRAM_URL = "https://www.instagram.com/adputcantina?igsh=dW5xYTZzZmxkMGg5";
 
-/* Clima: San Miguel de Tucumán (ajustable) */
-const CITY_LABEL = "San Miguel de Tucumán";
+/* Clima: San Miguel de Tucumán */
 const LAT = -26.8083;
 const LON = -65.2176;
 const WEATHER_REFRESH_MS = 15 * 60_000;
@@ -69,26 +69,24 @@ function setClock(){
 function setDate(){
   const d = new Date();
   const fmt = new Intl.DateTimeFormat("es-AR", { weekday:"short", day:"2-digit", month:"short" });
-  // ej: "mié., 29 ene"
   $("dateChip").textContent = fmt.format(d).replace(".", "");
 }
 
 /* =========================
-   QR
+   QR (solo imágenes, sin botones)
 ========================= */
-function setQR(){
-  const qr = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + encodeURIComponent(MENU_URL);
-  $("qrMenu").src = qr;
+function setQRs(){
+  const qr1 = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(MENU_URL);
+  const qr2 = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(INSTAGRAM_URL);
+
+  $("qrMenu").src = qr1;
+  $("qrIg").src   = qr2;
 }
 
 /* =========================
    CLIMA (Open-Meteo, sin API key)
-   - temp actual
-   - estado (weathercode)
-   - probabilidad lluvia (precipitation_probability) en la hora actual
 ========================= */
 function weatherCodeToText(code){
-  // Mapeo básico (suficiente para TV)
   const map = {
     0: "Despejado",
     1: "Mayormente despejado",
@@ -129,6 +127,7 @@ function weatherCodeToEmoji(code){
 
 async function loadWeather(){
   try{
+    // Tip: “timezone=auto” evita desfasajes
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
       `&current_weather=true` +
@@ -136,7 +135,7 @@ async function loadWeather(){
       `&timezone=auto`;
 
     const res = await fetch(url, { cache:"no-store" });
-    if(!res.ok) throw new Error("No se pudo leer clima");
+    if(!res.ok) throw new Error("HTTP clima " + res.status);
     const data = await res.json();
 
     const temp = Math.round(data?.current_weather?.temperature ?? NaN);
@@ -144,30 +143,26 @@ async function loadWeather(){
     const text = weatherCodeToText(code);
     const emoji = weatherCodeToEmoji(code);
 
-    // Probabilidad lluvia: buscamos índice de la hora actual
+    // prob lluvia: index por hora actual
     const nowIso = data?.current_weather?.time;
-    let rainProb = null;
-
     const times = data?.hourly?.time || [];
     const probs = data?.hourly?.precipitation_probability || [];
 
+    let rainProb = null;
     if(nowIso && times.length && probs.length){
       const i = times.indexOf(nowIso);
-      if(i >= 0 && probs[i] != null) rainProb = probs[i];
-      else {
-        // fallback: toma la primera
-        rainProb = probs[0] ?? null;
-      }
+      rainProb = (i >= 0) ? probs[i] : probs[0];
     }
 
-    const rainText = (rainProb == null) ? "--" : `${Math.round(rainProb)}%`;
+    const rainText = (rainProb == null) ? "--%" : `${Math.round(rainProb)}%`;
 
     $("wEmoji").textContent = emoji;
     $("wText").textContent = `${Number.isFinite(temp) ? temp : "--"}° · ${text} · Lluvia ${rainText}`;
   } catch(e){
-    // si falla, no rompemos el layout
+    // fallback suave (no rompe)
     $("wEmoji").textContent = "⛅";
-    $("wText").textContent = `--° · ${CITY_LABEL} · Lluvia --%`;
+    $("wText").textContent = `--° · Clima no disponible · Lluvia --%`;
+    console.error("Clima:", e);
   }
 }
 
@@ -249,7 +244,6 @@ function buildPromos(rows){
     return promoCol !== "" || tvBloque === "PROMO";
   });
 
-  // orden
   promos.sort((a,b) => {
     const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
     const ob = toNumber(b["TV ORDEN"], toNumber(b["Orden"], 999999));
@@ -272,16 +266,16 @@ function buildPromos(rows){
     const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
 
     let oldPrice = "";
-    let mainPrice = "";
+    let mainPrice_toggle = "";
 
     if(tvPrecio){
-      mainPrice = tvPrecio;
+      mainPrice_toggle = tvPrecio;
       if(precioBase) oldPrice = precioBase;
     } else if(precioPromo){
-      mainPrice = precioPromo;
+      mainPrice_toggle = precioPromo;
       if(precioBase && precioBase !== precioPromo) oldPrice = precioBase;
     } else {
-      mainPrice = precioBase || "";
+      mainPrice_toggle = precioBase || "";
       oldPrice = "";
     }
 
@@ -293,7 +287,7 @@ function buildPromos(rows){
       accent: accentFromCategory(categoria),
       desc,
       imgSrc,
-      mainPrice,
+      mainPrice: mainPrice_toggle,
       oldPrice,
       note
     };
@@ -345,15 +339,11 @@ function swapImage(src){
   const next = activeLayer === "A" ? imgB : imgA;
   const current = activeLayer === "A" ? imgA : imgB;
 
-  next.onerror = () => {
-    // fallback al logo si falla
-    next.src = "img/logo.png";
-  };
-
+  next.onerror = () => { next.src = "img/logo.png"; };
   next.src = src || "img/logo.png";
+
   next.classList.add("is-active");
   current.classList.remove("is-active");
-
   activeLayer = (activeLayer === "A") ? "B" : "A";
 }
 
@@ -370,12 +360,10 @@ function renderPromo(p){
   $("promoPrice").textContent = p?.mainPrice || "";
   $("promoNote").textContent = p?.note || "Cantina ADPUT";
 
-  // tachado
   const oldEl = $("oldPrice");
   oldEl.textContent = p?.oldPrice || "";
   oldEl.style.visibility = (p?.oldPrice) ? "visible" : "hidden";
 
-  // badge %
   const off = (p?.oldPrice && p?.mainPrice) ? computeOff(p.oldPrice, p.mainPrice) : null;
   if(off !== null){
     $("pillText").textContent = "PROMO";
@@ -389,10 +377,8 @@ function renderPromo(p){
     offEl.classList.remove("badge-pop-soft","badge-pop-hard");
   }
 
-  // imagen
   swapImage(p?.imgSrc || "img/logo.png");
 
-  // animaciones
   media.classList.remove("media-enter");
   document.body.classList.remove("text-enter");
   $("promoPrice").classList.remove("price-punch");
@@ -443,11 +429,12 @@ setDate();
 setInterval(setClock, 10_000);
 setInterval(setDate, 60_000);
 
-setQR();
+setQRs();
 startParallax();
 
 loadPromos();
 setInterval(loadPromos, REFRESH_MS);
 
+/* Clima (si falla, queda fallback, pero chip se ve igual) */
 loadWeather();
 setInterval(loadWeather, WEATHER_REFRESH_MS);
