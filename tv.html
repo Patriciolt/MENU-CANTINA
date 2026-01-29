@@ -32,7 +32,6 @@
       <div class="header-right">
         <div class="chip date" id="dateChip">--</div>
 
-        <!-- CLIMA con MISMA ALTURA que la hora -->
         <div class="chip weather big" id="weatherChip" title="Clima (Open-Meteo)">
           <span class="w-emoji" id="wEmoji">⛅</span>
           <span class="w-text" id="wText">--° · -- · Lluvia --%</span>
@@ -88,20 +87,44 @@
 
         <!-- SIDEBAR TV: SOLO QRs -->
         <aside class="tv-sidebar">
+          <!-- QR Menú -->
           <div class="qr-card qr-card--menu">
-            <div class="qr-title qr-title--big">ESCANEÁ EL MENÚ</div>
+            <div class="qr-head">
+              <span class="qr-ico qr-ico--menu" aria-hidden="true">
+                <!-- ícono "scan" simple -->
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                  <path d="M4 7V5a1 1 0 0 1 1-1h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M20 7V5a1 1 0 0 0-1-1h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M4 17v2a1 1 0 0 0 1 1h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M20 17v2a1 1 0 0 1-1 1h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M7 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <div class="qr-title qr-title--big">ESCANEÁ EL MENÚ</div>
+            </div>
+
             <img id="qrMenu" class="qr" alt="QR Menú" />
             <div class="qr-sub">adputcantina.com.ar</div>
           </div>
 
+          <!-- QR WhatsApp -->
           <div class="qr-card">
-            <div class="qr-title">PEDIDOS POR WHATSAPP</div>
+            <div class="qr-head">
+              <span class="qr-ico qr-ico--wapp" aria-hidden="true">💬</span>
+              <div class="qr-title">PEDIDOS POR WHATSAPP</div>
+            </div>
+
             <img id="qrWapp" class="qr" alt="QR WhatsApp" />
             <div class="qr-sub" id="wappLine">+54 9 3816 83-6838</div>
           </div>
 
+          <!-- QR Instagram -->
           <div class="qr-card">
-            <div class="qr-title">SEGUINOS EN INSTAGRAM</div>
+            <div class="qr-head">
+              <span class="qr-ico qr-ico--ig" aria-hidden="true">📸</span>
+              <div class="qr-title">SEGUINOS EN INSTAGRAM</div>
+            </div>
+
             <img id="qrIg" class="qr" alt="QR Instagram" />
             <div class="qr-sub">@adputcantina</div>
           </div>
