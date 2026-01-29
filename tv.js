@@ -141,46 +141,23 @@ function buildPromos(rows){
 }
 
 /* =========================
-   WATERMARK FALLBACK (isotipo -> logo)
-========================= */
-function ensureWatermarkFallback(){
-  const el = document.querySelector(".tv-logo-watermark");
-  if(!el) return;
-
-  const test = new Image();
-  test.onload = () => { /* ok */ };
-  test.onerror = () => {
-    // Si no existe isotipo.png, usa logo.png sin romper nada
-    el.style.backgroundImage = 'url("img/logo.png")';
-  };
-  test.src = "img/isotipo.png";
-}
-
-/* =========================
    RENDER + ANIMATIONS
 ========================= */
 let promos = [];
 let idx = 0;
 let rotateTimer = null;
 
-function restartAnim(el, className){
-  el.classList.remove(className);
-  // force reflow para reiniciar animación
-  void el.offsetWidth;
-  el.classList.add(className);
-}
-
 function renderPromo(p, direction = 1){
   const card = $("promoCard");
   const media = $("promoMedia");
   const img = $("promoImg");
 
-  // dirección para slide
+  // dirección para el flip/slide
   card.style.setProperty("--dir", String(direction));
 
-  // salida card
-  card.classList.remove("fade-in");
-  card.classList.add("fade-out");
+  // salida flip
+  card.classList.remove("flip-in");
+  card.classList.add("flip-out");
 
   setTimeout(() => {
     const hasPromo = !!p;
@@ -224,17 +201,25 @@ function renderPromo(p, direction = 1){
       img.style.display = "none";
     }
 
-    // entrada card
-    card.classList.remove("fade-out");
-    card.classList.add("fade-in");
+    // entrada flip
+    card.classList.remove("flip-out");
+    card.classList.add("flip-in");
 
-    // animaciones pro: media + texto escalonado
+    // animaciones pro: reveal de media + stagger + punch del precio
     media.classList.remove("media-enter");
     document.body.classList.remove("text-enter");
-    void media.offsetWidth;
+    $("promoPrice").classList.remove("price-punch");
+
+    void card.offsetWidth; // reflow
     media.classList.add("media-enter");
     document.body.classList.add("text-enter");
-  }, 320);
+
+    // punch del precio (ligero delay para que se sienta “en foco”)
+    setTimeout(() => {
+      $("promoPrice").classList.add("price-punch");
+    }, 180);
+
+  }, 360);
 }
 
 function startRotation(){
@@ -251,7 +236,7 @@ function startRotation(){
     const prev = idx;
     idx = (idx + 1) % promos.length;
 
-    // alterna dirección para que se sienta “vivo”
+    // alterna dirección para dar vida
     const dir = (prev % 2 === 0) ? 1 : -1;
     renderPromo(promos[idx], dir);
   }, ROTATE_MS);
@@ -284,6 +269,5 @@ async function loadPromos(){
 setClock();
 setInterval(setClock, 10_000);
 
-ensureWatermarkFallback();
 loadPromos();
 setInterval(loadPromos, REFRESH_MS);
