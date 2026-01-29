@@ -12,6 +12,10 @@ const SHUFFLE    = true;
 const MENU_URL = "https://adputcantina.com.ar/menu.html";
 const INSTAGRAM_URL = "https://www.instagram.com/adputcantina?igsh=dW5xYTZzZmxkMGg5";
 
+/* WhatsApp (link directo) */
+const WAPP_NUMBER_E164 = "5493816836838"; // +54 9 3816 83-6838
+const WHATSAPP_URL = `https://wa.me/${WAPP_NUMBER_E164}`;
+
 /* Clima: San Miguel de Tucumán */
 const LAT = -26.8083;
 const LON = -65.2176;
@@ -73,14 +77,16 @@ function setDate(){
 }
 
 /* =========================
-   QR (solo imágenes, sin botones)
+   QR (imágenes)
 ========================= */
 function setQRs(){
-  const qr1 = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(MENU_URL);
-  const qr2 = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(INSTAGRAM_URL);
+  const qrMenu = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(MENU_URL);
+  const qrWapp = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(WHATSAPP_URL);
+  const qrIg   = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(INSTAGRAM_URL);
 
-  $("qrMenu").src = qr1;
-  $("qrIg").src   = qr2;
+  $("qrMenu").src = qrMenu;
+  $("qrWapp").src = qrWapp;
+  $("qrIg").src   = qrIg;
 }
 
 /* =========================
@@ -127,7 +133,6 @@ function weatherCodeToEmoji(code){
 
 async function loadWeather(){
   try{
-    // Tip: “timezone=auto” evita desfasajes
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
       `&current_weather=true` +
@@ -143,7 +148,6 @@ async function loadWeather(){
     const text = weatherCodeToText(code);
     const emoji = weatherCodeToEmoji(code);
 
-    // prob lluvia: index por hora actual
     const nowIso = data?.current_weather?.time;
     const times = data?.hourly?.time || [];
     const probs = data?.hourly?.precipitation_probability || [];
@@ -159,7 +163,6 @@ async function loadWeather(){
     $("wEmoji").textContent = emoji;
     $("wText").textContent = `${Number.isFinite(temp) ? temp : "--"}° · ${text} · Lluvia ${rainText}`;
   } catch(e){
-    // fallback suave (no rompe)
     $("wEmoji").textContent = "⛅";
     $("wText").textContent = `--° · Clima no disponible · Lluvia --%`;
     console.error("Clima:", e);
@@ -435,6 +438,6 @@ startParallax();
 loadPromos();
 setInterval(loadPromos, REFRESH_MS);
 
-/* Clima (si falla, queda fallback, pero chip se ve igual) */
+/* Clima */
 loadWeather();
 setInterval(loadWeather, WEATHER_REFRESH_MS);
