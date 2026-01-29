@@ -1,20 +1,21 @@
 /* =========================
-   CONFIG (cambiable)
+   CONFIG
 ========================= */
 const SHEET_ID = "1c4WYczs2NjwPz0f9aaSZShC-FaU3H9wnUm7FuYd9c6o";
 const SHEET_NAME = "Sheet1";
 
 const REFRESH_MS = 60_000;
-const DEFAULT_ROTATE_MS  = 9_000; // si no hay TV DURACION
+const ROTATE_MS  = 9_000;
 const SHUFFLE    = true;
 
+/* QR / Links */
 const MENU_URL = "https://adputcantina.com.ar/menu.html";
-const IG_URL   = "https://www.instagram.com/adputcantina?igsh=dW5xYTZzZmxkMGg5";
-const WAPP_URL = "https://wa.me/5493816836838?text=" + encodeURIComponent("Hola! Quiero pedir en Cantina ADPUT 😊");
 
-/* Cada cuántas promos meter un “resumen” */
-const SUMMARY_EVERY = 4;   // cada 4 promos
-const SUMMARY_COUNT = 3;   // muestra 3 en resumen
+/* Clima: San Miguel de Tucumán (ajustable) */
+const CITY_LABEL = "San Miguel de Tucumán";
+const LAT = -26.8083;
+const LON = -65.2176;
+const WEATHER_REFRESH_MS = 15 * 60_000;
 
 /* =========================
    HELPERS
@@ -41,7 +42,7 @@ function toNumber(v, fallback = 999999){
 function money(v){
   const t = normalize(v);
   if(!t) return "";
-  if(/[a-zA-ZxX]/.test(t)) return t; // "2x1"
+  if(/[a-zA-ZxX]/.test(t)) return t;
   const n = toNumber(t, NaN);
   if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
   return t;
@@ -51,10 +52,6 @@ function numberFromMoneyText(txt){
   const n = Number(digits);
   return Number.isFinite(n) ? n : NaN;
 }
-function setClock(){
-  const d = new Date();
-  $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-}
 function shuffleInPlace(arr){
   for(let i = arr.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
@@ -63,42 +60,136 @@ function shuffleInPlace(arr){
 }
 
 /* =========================
-   CTA / QR
+   FECHA / HORA
 ========================= */
-function setCTA(){
-  $("btnMenu").href = MENU_URL;
-  $("btnWapp").href = WAPP_URL;
-  $("btnIg").href = IG_URL;
+function setClock(){
+  const d = new Date();
+  $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+function setDate(){
+  const d = new Date();
+  const fmt = new Intl.DateTimeFormat("es-AR", { weekday:"short", day:"2-digit", month:"short" });
+  // ej: "mié., 29 ene"
+  $("dateChip").textContent = fmt.format(d).replace(".", "");
+}
 
-  // QR (servicio liviano)
-  const qr = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(MENU_URL);
+/* =========================
+   QR
+========================= */
+function setQR(){
+  const qr = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + encodeURIComponent(MENU_URL);
   $("qrMenu").src = qr;
 }
 
 /* =========================
-   PARALLAX LENTO (logo + pattern)
+   CLIMA (Open-Meteo, sin API key)
+   - temp actual
+   - estado (weathercode)
+   - probabilidad lluvia (precipitation_probability) en la hora actual
+========================= */
+function weatherCodeToText(code){
+  // Mapeo básico (suficiente para TV)
+  const map = {
+    0: "Despejado",
+    1: "Mayormente despejado",
+    2: "Parcial nublado",
+    3: "Nublado",
+    45: "Neblina",
+    48: "Neblina",
+    51: "Llovizna",
+    53: "Llovizna",
+    55: "Llovizna",
+    61: "Lluvia",
+    63: "Lluvia",
+    65: "Lluvia fuerte",
+    71: "Nieve",
+    73: "Nieve",
+    75: "Nieve fuerte",
+    80: "Chubascos",
+    81: "Chubascos",
+    82: "Chubascos fuertes",
+    95: "Tormentas",
+    96: "Tormentas",
+    99: "Tormentas fuertes"
+  };
+  return map[code] || "Tiempo";
+}
+function weatherCodeToEmoji(code){
+  if(code === 0) return "☀️";
+  if(code === 1) return "🌤️";
+  if(code === 2) return "⛅";
+  if(code === 3) return "☁️";
+  if(code === 45 || code === 48) return "🌫️";
+  if([51,53,55].includes(code)) return "🌦️";
+  if([61,63,65,80,81,82].includes(code)) return "🌧️";
+  if([95,96,99].includes(code)) return "⛈️";
+  if([71,73,75].includes(code)) return "❄️";
+  return "⛅";
+}
+
+async function loadWeather(){
+  try{
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
+      `&current_weather=true` +
+      `&hourly=precipitation_probability` +
+      `&timezone=auto`;
+
+    const res = await fetch(url, { cache:"no-store" });
+    if(!res.ok) throw new Error("No se pudo leer clima");
+    const data = await res.json();
+
+    const temp = Math.round(data?.current_weather?.temperature ?? NaN);
+    const code = data?.current_weather?.weathercode;
+    const text = weatherCodeToText(code);
+    const emoji = weatherCodeToEmoji(code);
+
+    // Probabilidad lluvia: buscamos índice de la hora actual
+    const nowIso = data?.current_weather?.time;
+    let rainProb = null;
+
+    const times = data?.hourly?.time || [];
+    const probs = data?.hourly?.precipitation_probability || [];
+
+    if(nowIso && times.length && probs.length){
+      const i = times.indexOf(nowIso);
+      if(i >= 0 && probs[i] != null) rainProb = probs[i];
+      else {
+        // fallback: toma la primera
+        rainProb = probs[0] ?? null;
+      }
+    }
+
+    const rainText = (rainProb == null) ? "--" : `${Math.round(rainProb)}%`;
+
+    $("wEmoji").textContent = emoji;
+    $("wText").textContent = `${Number.isFinite(temp) ? temp : "--"}° · ${text} · Lluvia ${rainText}`;
+  } catch(e){
+    // si falla, no rompemos el layout
+    $("wEmoji").textContent = "⛅";
+    $("wText").textContent = `--° · ${CITY_LABEL} · Lluvia --%`;
+  }
+}
+
+/* =========================
+   PARALLAX
 ========================= */
 function startParallax(){
   const wm = $("watermark");
   const pt = $("pattern");
-  if(!wm && !pt) return;
-
   let t0 = performance.now();
   function tick(now){
     const t = (now - t0) / 1000;
-
     if(wm){
       const x = 82 + Math.sin(t * 0.12) * 2.4;
       const y = 56 + Math.cos(t * 0.10) * 1.8;
       wm.style.backgroundPosition = `${x}% ${y}%`;
     }
-
     if(pt){
       const px = (Math.sin(t * 0.06) * 18);
       const py = (Math.cos(t * 0.05) * 14);
       pt.style.backgroundPosition = `${px}px ${py}px`;
     }
-
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -109,7 +200,7 @@ function startParallax(){
 ========================= */
 async function fetchSheetRows(){
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, { cache:"no-store" });
   if(!res.ok) throw new Error(`HTTP ${res.status} al leer Google Sheets`);
 
   const text = await res.text();
@@ -142,8 +233,7 @@ function accentFromCategory(cat){
 }
 
 /* =========================
-   BUILD PROMOS (only promos)
-   + soporta TV DURACION, TV PRIORIDAD
+   PROMOS ONLY + PRICE LOGIC
 ========================= */
 function buildPromos(rows){
   const valid = rows.filter(r => {
@@ -159,12 +249,8 @@ function buildPromos(rows){
     return promoCol !== "" || tvBloque === "PROMO";
   });
 
+  // orden
   promos.sort((a,b) => {
-    // prioridad mayor primero
-    const pa = toNumber(a["TV PRIORIDAD"], 0);
-    const pb = toNumber(b["TV PRIORIDAD"], 0);
-    if(pb !== pa) return pb - pa;
-
     const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
     const ob = toNumber(b["TV ORDEN"], toNumber(b["Orden"], 999999));
     return oa - ob;
@@ -201,15 +287,15 @@ function buildPromos(rows){
 
     const note = normalize(r["TV TITULO"]) || promoNoteFromCol || "PROMO DEL DÍA";
 
-    // duración por promo (segundos -> ms)
-    const durSec = toNumber(r["TV DURACION"], NaN);
-    const durationMs = Number.isFinite(durSec) && durSec > 0 ? Math.round(durSec * 1000) : DEFAULT_ROTATE_MS;
-
     return {
-      nombre, categoria, accent: accentFromCategory(categoria),
-      desc, imgSrc,
-      mainPrice, oldPrice, note,
-      durationMs
+      nombre,
+      categoria,
+      accent: accentFromCategory(categoria),
+      desc,
+      imgSrc,
+      mainPrice,
+      oldPrice,
+      note
     };
   });
 
@@ -218,15 +304,12 @@ function buildPromos(rows){
 }
 
 /* =========================
-   RENDER (Crossfade + wipe + badge pop + progress)
+   ANIMACIONES + ROTACIÓN
 ========================= */
 let promos = [];
 let idx = 0;
-let steps = 0;
-let timer = null;
-
-// crossfade state
-let activeLayer = "A"; // A o B
+let rotateTimer = null;
+let activeLayer = "A";
 
 function runWipe(){
   const wipe = $("wipe");
@@ -234,7 +317,6 @@ function runWipe(){
   void wipe.offsetWidth;
   wipe.classList.add("wipe-run");
 }
-
 function setProgress(durationMs){
   const bar = $("progressBar");
   bar.style.transition = "none";
@@ -243,137 +325,72 @@ function setProgress(durationMs){
   bar.style.transition = `width ${durationMs}ms linear`;
   bar.style.width = "100%";
 }
-
 function popBadge(kind){
   const b = $("offBadge");
   b.classList.remove("badge-pop-soft","badge-pop-hard");
   void b.offsetWidth;
   b.classList.add(kind);
 }
-
 function computeOff(oldPrice, mainPrice){
   const oldN = numberFromMoneyText(oldPrice);
   const newN = numberFromMoneyText(mainPrice);
   if(Number.isFinite(oldN) && Number.isFinite(newN) && oldN > 0 && newN > 0 && oldN > newN){
-    const off = Math.round(((oldN - newN) / oldN) * 100);
-    return off;
+    return Math.round(((oldN - newN) / oldN) * 100);
   }
   return null;
 }
-
-/* Slide resumen (3 promos) */
-function renderSummary(direction = 1){
-  const card = $("promoCard");
-  card.style.setProperty("--dir", String(direction));
-  runWipe();
-
-  const list = promos.slice(idx, idx + SUMMARY_COUNT);
-  const lines = list.map(p => {
-    const off = (p.oldPrice && p.mainPrice) ? computeOff(p.oldPrice, p.mainPrice) : null;
-    const offTxt = (off !== null) ? ` (-${off}%)` : "";
-    return `• ${p.nombre} — ${p.mainPrice}${offTxt}`;
-  });
-
-  // set accent default para resumen
-  card.dataset.accent = "default";
-
-  // Texto tipo resumen
-  $("pillText").textContent = "PROMOS";
-  $("offBadge").style.display = "none";
-
-  $("promoTitle").textContent = "PROMOS DE HOY";
-  $("promoDesc").textContent = lines.join("\n");
-  $("promoDesc").style.whiteSpace = "pre-line";
-
-  $("oldPrice").style.visibility = "hidden";
-  $("promoPrice").textContent = "";
-  $("promoNote").textContent = "Escaneá el QR para ver todo el menú";
-
-  // imagen: usa logo (queda pro)
-  swapImage("img/logo.png");
-
-  // animaciones
-  const media = $("promoMedia");
-  media.classList.remove("media-enter");
-  document.body.classList.remove("text-enter");
-  $("promoPrice").classList.remove("price-punch");
-  void card.offsetWidth;
-  media.classList.add("media-enter");
-  document.body.classList.add("text-enter");
-
-  // progress
-  const dur = DEFAULT_ROTATE_MS;
-  setProgress(dur);
-
-  return dur;
-}
-
 function swapImage(src){
   const imgA = $("promoImgA");
   const imgB = $("promoImgB");
-
   const next = activeLayer === "A" ? imgB : imgA;
   const current = activeLayer === "A" ? imgA : imgB;
 
   next.onerror = () => {
-    // si falla, ocultamos la capa next
-    next.classList.remove("is-active");
+    // fallback al logo si falla
+    next.src = "img/logo.png";
   };
 
-  next.src = src;
+  next.src = src || "img/logo.png";
   next.classList.add("is-active");
   current.classList.remove("is-active");
 
   activeLayer = (activeLayer === "A") ? "B" : "A";
 }
 
-function renderPromo(p, direction = 1){
+function renderPromo(p){
   const card = $("promoCard");
   const media = $("promoMedia");
   const offEl = $("offBadge");
 
-  card.style.setProperty("--dir", String(direction));
-  card.dataset.accent = p.accent || "default";
+  card.dataset.accent = p?.accent || "default";
   runWipe();
 
-  // reset whiteSpace si veníamos de resumen
-  $("promoDesc").style.whiteSpace = "normal";
+  $("promoTitle").textContent = p?.nombre || "SIN PROMOS";
+  $("promoDesc").textContent = p?.desc || "Escaneá el QR para ver el menú completo.";
+  $("promoPrice").textContent = p?.mainPrice || "";
+  $("promoNote").textContent = p?.note || "Cantina ADPUT";
 
-  $("promoTitle").textContent = p.nombre || "";
-  $("promoDesc").textContent = p.desc || " ";
-  $("promoPrice").textContent = p.mainPrice || "";
-  $("promoNote").textContent = p.note || "";
-
-  // precio tachado
+  // tachado
   const oldEl = $("oldPrice");
-  oldEl.textContent = p.oldPrice || "";
-  oldEl.style.visibility = p.oldPrice ? "visible" : "hidden";
+  oldEl.textContent = p?.oldPrice || "";
+  oldEl.style.visibility = (p?.oldPrice) ? "visible" : "hidden";
 
-  // Badge
-  const off = (p.oldPrice && p.mainPrice) ? computeOff(p.oldPrice, p.mainPrice) : null;
-
+  // badge %
+  const off = (p?.oldPrice && p?.mainPrice) ? computeOff(p.oldPrice, p.mainPrice) : null;
   if(off !== null){
     $("pillText").textContent = "PROMO";
     offEl.textContent = `-${off}%`;
     offEl.style.display = "inline-block";
-
-    // pop inteligente
     if(off >= 30) popBadge("badge-pop-hard");
     else popBadge("badge-pop-soft");
   } else {
-    // si no hay %, igual mostrar “PROMO” sin badge
     $("pillText").textContent = "PROMO";
     offEl.style.display = "none";
     offEl.classList.remove("badge-pop-soft","badge-pop-hard");
   }
 
-  // Imagen crossfade
-  if(p.imgSrc){
-    swapImage(p.imgSrc);
-  } else {
-    // fallback: logo
-    swapImage("img/logo.png");
-  }
+  // imagen
+  swapImage(p?.imgSrc || "img/logo.png");
 
   // animaciones
   media.classList.remove("media-enter");
@@ -384,106 +401,53 @@ function renderPromo(p, direction = 1){
   document.body.classList.add("text-enter");
   setTimeout(() => $("promoPrice").classList.add("price-punch"), 190);
 
-  // progress con duración real de promo
-  setProgress(p.durationMs);
-
-  return p.durationMs;
+  setProgress(ROTATE_MS);
 }
 
-/* Rotación con duración variable (setTimeout) */
-function scheduleNext(delayMs){
-  clearTimeout(timer);
-  timer = setTimeout(() => {
-    showNext();
-  }, delayMs);
-}
+function startRotation(){
+  if(rotateTimer) clearInterval(rotateTimer);
 
-function showNoPromos(){
-  const card = $("promoCard");
-  card.dataset.accent = "default";
-  runWipe();
-
-  $("pillText").textContent = "INFO";
-  $("offBadge").style.display = "none";
-
-  $("promoTitle").textContent = "HOY NO HAY PROMOS";
-  $("promoDesc").textContent = "Escaneá el QR para ver el menú completo.\nConsultá en mostrador por disponibilidad.";
-  $("promoDesc").style.whiteSpace = "pre-line";
-
-  $("oldPrice").style.visibility = "hidden";
-  $("promoPrice").textContent = "";
-  $("promoNote").textContent = "Cantina ADPUT";
-
-  swapImage("img/logo.png");
-
-  const media = $("promoMedia");
-  media.classList.remove("media-enter");
-  document.body.classList.remove("text-enter");
-  $("promoPrice").classList.remove("price-punch");
-  void card.offsetWidth;
-  media.classList.add("media-enter");
-  document.body.classList.add("text-enter");
-
-  $("status").textContent = "Sin promos";
-  const dur = DEFAULT_ROTATE_MS;
-  setProgress(dur);
-  scheduleNext(dur);
-}
-
-function showNext(){
   if(!promos.length){
-    showNoPromos();
+    renderPromo(null);
+    $("status").textContent = "Sin promos";
     return;
   }
 
-  steps++;
+  idx = 0;
+  renderPromo(promos[idx]);
 
-  // cada SUMMARY_EVERY promos -> resumen
-  if(SUMMARY_EVERY > 0 && steps % (SUMMARY_EVERY + 1) === 0){
-    const dir = (steps % 2 === 0) ? 1 : -1;
-    const d = renderSummary(dir);
-    scheduleNext(d);
-    return;
-  }
-
-  const p = promos[idx];
-  const dir = (idx % 2 === 0) ? 1 : -1;
-  const d = renderPromo(p, dir);
-
-  idx = (idx + 1) % promos.length;
-  scheduleNext(d);
+  rotateTimer = setInterval(() => {
+    idx = (idx + 1) % promos.length;
+    renderPromo(promos[idx]);
+  }, ROTATE_MS);
 }
 
-/* =========================
-   LOAD
-========================= */
 async function loadPromos(){
   try{
     $("status").textContent = "Actualizando datos…";
     const rows = await fetchSheetRows();
     promos = buildPromos(rows);
-    idx = 0;
-    steps = 0;
-
     $("status").textContent = promos.length ? `OK · ${promos.length} promos` : "Sin promos";
-    showNext();
+    startRotation();
   } catch(err){
     console.error(err);
-    $("status").textContent = "Error leyendo Google Sheets";
-
-    // pantalla linda igual
     promos = [];
-    idx = 0;
-    steps = 0;
-    showNoPromos();
+    $("status").textContent = "Error leyendo Google Sheets";
+    startRotation();
   }
 }
 
 /* INIT */
 setClock();
+setDate();
 setInterval(setClock, 10_000);
-setCTA();
+setInterval(setDate, 60_000);
+
+setQR();
 startParallax();
 
 loadPromos();
 setInterval(loadPromos, REFRESH_MS);
+
+loadWeather();
+setInterval(loadWeather, WEATHER_REFRESH_MS);
