@@ -31,14 +31,17 @@
       </div>
 
       <div class="header-right">
+        <div class="chip date" id="dateChip">--</div>
+        <div class="chip weather" id="weatherChip">
+          <span class="w-emoji" id="wEmoji">⛅</span>
+          <span class="w-text" id="wText">--° · -- · Lluvia --%</span>
+        </div>
         <div class="clock" id="clock">--:--</div>
       </div>
     </header>
 
     <section class="tv-content">
-      <!-- Card promo -->
       <div class="promo-card shimmer" id="promoCard" data-accent="default">
-        <!-- Wipe diagonal entre cambios -->
         <div class="wipe" id="wipe" aria-hidden="true"></div>
 
         <div class="promo-media" id="promoMedia">
@@ -52,6 +55,13 @@
           <div class="promo-pill" id="promoPill">
             🔥 <span id="pillText">PROMO</span>
             <span class="off-badge" id="offBadge" style="display:none"></span>
+          </div>
+
+          <!-- QR integrado (no panel lateral) -->
+          <div class="qr-float">
+            <div class="qr-label">ESCANEÁ EL MENÚ</div>
+            <img id="qrMenu" class="qr" alt="QR Menú" />
+            <div class="qr-mini">adputcantina.com.ar</div>
           </div>
         </div>
 
@@ -70,32 +80,18 @@
           </div>
 
           <div class="promo-footer">
-            <div class="promo-footer-left" id="footerLeft">
+            <div class="promo-footer-left">
               📌 Consultá por promos en el mostrador
             </div>
             <div class="promo-footer-right" id="status">Actualizando...</div>
           </div>
         </div>
 
-        <!-- Barra progreso tipo stories -->
+        <!-- Barra progreso -->
         <div class="progress">
           <div class="progress-bar" id="progressBar"></div>
         </div>
       </div>
-
-      <!-- Panel QR / Redes (siempre visible, pro) -->
-      <aside class="side-cta">
-        <div class="cta-card">
-          <div class="cta-title">ESCANEÁ EL MENÚ</div>
-          <img id="qrMenu" class="qr" alt="QR Menú" />
-          <div class="cta-links">
-            <a class="cta-btn" id="btnMenu" target="_blank" rel="noopener">Abrir menú</a>
-            <a class="cta-btn ghost" id="btnWapp" target="_blank" rel="noopener">WhatsApp</a>
-            <a class="cta-btn ghost" id="btnIg" target="_blank" rel="noopener">Instagram</a>
-          </div>
-          <div class="cta-small" id="ctaSmall">adputcantina.com.ar</div>
-        </div>
-      </aside>
     </section>
 
     <footer class="tv-footer">
