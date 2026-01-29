@@ -135,6 +135,8 @@ body{
   align-items:center;
   gap:12px;
 }
+
+/* CHIPS */
 .chip{
   display:flex;
   align-items:center;
@@ -152,7 +154,20 @@ body{
   font-weight:900;
   color: rgba(16,24,32,.78);
 }
-.w-emoji{ font-size:18px; }
+
+/* MISMA ALTURA / peso visual que la hora */
+.chip.weather.big{
+  padding: 12px 16px;          /* igual que reloj */
+  border-radius:16px;
+  font-size:22px;              /* más grande y “parejo” */
+  line-height:1;
+  background: rgba(255,255,255,.72);
+}
+
+/* emoji y texto alineados */
+.w-emoji{ font-size:22px; line-height:1; }
+.w-text{ font-weight:950; }
+
 .clock{
   font-weight:950;
   font-size:34px;
@@ -460,6 +475,8 @@ body{
   justify-content:center;
   gap: 12px;
 }
+
+/* TITULOS QR */
 .qr-title{
   font-family: Montserrat, Inter, system-ui;
   font-weight:900;
@@ -468,6 +485,14 @@ body{
   color: rgba(16,24,32,.78);
   text-align:center;
 }
+
+/* Menú MÁS GRANDE */
+.qr-title--big{
+  font-size:18px;
+  letter-spacing:.12em;
+  color: rgba(16,24,32,.86);
+}
+
 .qr{
   width: 240px;
   height: 240px;
