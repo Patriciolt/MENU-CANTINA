@@ -33,7 +33,7 @@ function toNumber(v, fallback = 999999){
 function money(v){
   const t = normalize(v);
   if(!t) return "";
-  if(/[a-zA-ZxX]/.test(t)) return t; // "2x1", "DESDE", etc
+  if(/[a-zA-ZxX]/.test(t)) return t; // "2x1", etc
   const n = toNumber(t, NaN);
   if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
   return t;
@@ -83,7 +83,6 @@ async function fetchSheetRows(){
    PROMOS ONLY + PRICE LOGIC
 ========================= */
 function buildPromos(rows){
-  // base: Activo = si, TV ACTIVO = si (o vacío)
   const valid = rows.filter(r => {
     const activo = isYes(r["Activo"]);
     const tvActivoCell = normalize(r["TV ACTIVO"]);
@@ -91,14 +90,12 @@ function buildPromos(rows){
     return activo && tvActivo && normalize(r["Producto"]);
   });
 
-  // solo promos: Promo con algo (cualquier texto/número) O TV BLOQUE = PROMO
   const promos = valid.filter(r => {
     const promoCol = normalize(r["Promo"]);
     const tvBloque = upper(r["TV BLOQUE"]);
     return promoCol !== "" || tvBloque === "PROMO";
   });
 
-  // Orden: TV ORDEN -> Orden
   promos.sort((a,b) => {
     const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
     const ob = toNumber(b["TV ORDEN"], toNumber(b["Orden"], 999999));
@@ -108,21 +105,18 @@ function buildPromos(rows){
   const out = promos.map(r => {
     const nombre = normalize(r["Producto"]);
 
-    // ✅ No usar "Promo" como descripción (así desaparece el "sí")
+    // No usar "Promo" como descripción
     const desc = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || "";
 
-    // Nota: si Promo tiene texto más largo (ej "3x2 hasta 22hs"), lo usamos como nota.
     const promoRaw = normalize(r["Promo"]);
     const promoNoteFromCol = (!isJustYesWord(promoRaw) && promoRaw.length >= 3) ? promoRaw : "";
 
-    // Imagen: columna Imagen -> img/archivo
     const imgName = normalize(r["Imagen"]);
     const imgSrc = imgName ? `img/${imgName}` : "";
 
-    // Precios:
     const precioBase = money(r["Precio"]);
     const precioPromo = money(r["Precio Promo"]);
-    const tvPrecio = normalize(r["TV PRECIO TEXTO"]); // si querés texto tipo "2x1"
+    const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
 
     let oldPrice = "";
     let mainPrice = "";
@@ -138,9 +132,7 @@ function buildPromos(rows){
       oldPrice = "";
     }
 
-    // Note final: TV TITULO > promo text > default
     const note = normalize(r["TV TITULO"]) || promoNoteFromCol || "PROMO DEL DÍA";
-
     return { nombre, desc, imgSrc, mainPrice, oldPrice, note };
   });
 
@@ -149,16 +141,44 @@ function buildPromos(rows){
 }
 
 /* =========================
-   RENDER
+   WATERMARK FALLBACK (isotipo -> logo)
+========================= */
+function ensureWatermarkFallback(){
+  const el = document.querySelector(".tv-logo-watermark");
+  if(!el) return;
+
+  const test = new Image();
+  test.onload = () => { /* ok */ };
+  test.onerror = () => {
+    // Si no existe isotipo.png, usa logo.png sin romper nada
+    el.style.backgroundImage = 'url("img/logo.png")';
+  };
+  test.src = "img/isotipo.png";
+}
+
+/* =========================
+   RENDER + ANIMATIONS
 ========================= */
 let promos = [];
 let idx = 0;
 let rotateTimer = null;
 
-function renderPromo(p){
+function restartAnim(el, className){
+  el.classList.remove(className);
+  // force reflow para reiniciar animación
+  void el.offsetWidth;
+  el.classList.add(className);
+}
+
+function renderPromo(p, direction = 1){
   const card = $("promoCard");
+  const media = $("promoMedia");
   const img = $("promoImg");
 
+  // dirección para slide
+  card.style.setProperty("--dir", String(direction));
+
+  // salida card
   card.classList.remove("fade-in");
   card.classList.add("fade-out");
 
@@ -170,12 +190,12 @@ function renderPromo(p){
     $("promoPrice").textContent = hasPromo ? (p.mainPrice || "") : "";
     $("promoNote").textContent = hasPromo ? (p.note || "") : "";
 
-    // Precio tachado
+    // precio tachado
     const oldEl = $("oldPrice");
     oldEl.textContent = hasPromo ? (p.oldPrice || "") : "";
     oldEl.style.visibility = (hasPromo && p.oldPrice) ? "visible" : "hidden";
 
-    // % OFF automático (solo si ambos precios son numéricos y old > new)
+    // % OFF
     const offEl = $("offBadge");
     if(hasPromo && p.oldPrice && p.mainPrice){
       const oldN = numberFromMoneyText(p.oldPrice);
@@ -191,7 +211,7 @@ function renderPromo(p){
       offEl.style.display = "none";
     }
 
-    // Imagen
+    // imagen
     if(hasPromo && p.imgSrc){
       img.src = p.imgSrc;
       img.style.display = "block";
@@ -204,24 +224,36 @@ function renderPromo(p){
       img.style.display = "none";
     }
 
+    // entrada card
     card.classList.remove("fade-out");
     card.classList.add("fade-in");
-  }, 280);
+
+    // animaciones pro: media + texto escalonado
+    media.classList.remove("media-enter");
+    document.body.classList.remove("text-enter");
+    void media.offsetWidth;
+    media.classList.add("media-enter");
+    document.body.classList.add("text-enter");
+  }, 320);
 }
 
 function startRotation(){
   if(rotateTimer) clearInterval(rotateTimer);
 
   if(!promos.length){
-    renderPromo(null);
+    renderPromo(null, 1);
     return;
   }
 
-  renderPromo(promos[idx]);
+  renderPromo(promos[idx], 1);
 
   rotateTimer = setInterval(() => {
+    const prev = idx;
     idx = (idx + 1) % promos.length;
-    renderPromo(promos[idx]);
+
+    // alterna dirección para que se sienta “vivo”
+    const dir = (prev % 2 === 0) ? 1 : -1;
+    renderPromo(promos[idx], dir);
   }, ROTATE_MS);
 }
 
@@ -244,7 +276,7 @@ async function loadPromos(){
       mainPrice: "",
       oldPrice: "",
       note: err?.message || ""
-    });
+    }, 1);
   }
 }
 
@@ -252,5 +284,6 @@ async function loadPromos(){
 setClock();
 setInterval(setClock, 10_000);
 
+ensureWatermarkFallback();
 loadPromos();
 setInterval(loadPromos, REFRESH_MS);
