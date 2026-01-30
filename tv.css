@@ -599,3 +599,50 @@ body{
 ========================= */
 .promo-note{ display:none !important; }
 .promo-footer--hidden{ display:none !important; }
+
+/* =========================
+   MEJORAS TV – DISTRIBUCIÓN + ANIMACIONES
+========================= */
+
+/* Bloque derecho más equilibrado */
+.promo-info{
+  padding: 32px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap: 26px;
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(12px);
+}
+
+/* Entrada animada del bloque derecho */
+.promo-info-animated{
+  animation: infoEnter .45s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes infoEnter{
+  from{
+    opacity:0;
+    transform: translateY(14px);
+  }
+  to{
+    opacity:1;
+    transform: translateY(0);
+  }
+}
+
+/* Título con más presencia */
+.promo-title{
+  font-size:72px;
+  letter-spacing:.04em;
+}
+
+/* Precio más protagonista */
+.promo-price{
+  font-size:64px;
+}
+
+/* Separación visual del precio */
+.promo-price-row{
+  padding-top: 18px;
+}
