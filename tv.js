@@ -351,6 +351,12 @@ function swapImage(src){
 }
 
 function renderPromo(p){
+  const info = document.querySelector(".promo-info");
+  if(info){
+    info.classList.remove("promo-info-animated");
+    void info.offsetWidth;
+    info.classList.add("promo-info-animated");
+  }
   const card = $("promoCard");
   const media = $("promoMedia");
   const offEl = $("offBadge");
@@ -441,3 +447,4 @@ setInterval(loadPromos, REFRESH_MS);
 /* Clima */
 loadWeather();
 setInterval(loadWeather, WEATHER_REFRESH_MS);
+
