@@ -351,25 +351,25 @@ function swapImage(src){
 }
 
 function renderPromo(p){
-  const info = document.querySelector(".promo-info");
-  if(info){
-    info.classList.remove("promo-info-animated");
-    void info.offsetWidth;
-    info.classList.add("promo-info-animated");
-  }
   const card = $("promoCard");
   const media = $("promoMedia");
   const offEl = $("offBadge");
 
   card.dataset.accent = p?.accent || "default";
   runWipe();
+  // Re-disparar animación del bloque derecho (para cada promo)
+  const info = document.querySelector(".promo-info");
+  if(info){
+    info.classList.remove("info-enter");
+    void info.offsetWidth;
+    info.classList.add("info-enter");
+  }
+
 
   $("promoTitle").textContent = p?.nombre || "SIN PROMOS";
   $("promoDesc").textContent = p?.desc || "";
   $("promoPrice").textContent = p?.mainPrice || "";
-  $("promoNote").textContent = "";
-
-  const oldEl = $("oldPrice");
+const oldEl = $("oldPrice");
   oldEl.textContent = p?.oldPrice || "";
   oldEl.style.visibility = (p?.oldPrice) ? "visible" : "hidden";
 
@@ -403,9 +403,7 @@ function startRotation(){
   if(rotateTimer) clearInterval(rotateTimer);
 
   if(!promos.length){
-    renderPromo(null);
-    $("status").textContent = "Sin promos";
-    return;
+    renderPromo(null);    return;
   }
 
   idx = 0;
@@ -419,16 +417,13 @@ function startRotation(){
 
 async function loadPromos(){
   try{
-    $("status").textContent = "Actualizando datos…";
-    const rows = await fetchSheetRows();
+        const rows = await fetchSheetRows();
     promos = buildPromos(rows);
-    $("status").textContent = promos.length ? `OK · ${promos.length} promos` : "Sin promos";
-    startRotation();
+        startRotation();
   } catch(err){
     console.error(err);
     promos = [];
-    $("status").textContent = "Error leyendo Google Sheets";
-    startRotation();
+        startRotation();
   }
 }
 
@@ -447,4 +442,3 @@ setInterval(loadPromos, REFRESH_MS);
 /* Clima */
 loadWeather();
 setInterval(loadWeather, WEATHER_REFRESH_MS);
-
