@@ -26,6 +26,11 @@ const WEATHER_REFRESH_MS = 15 * 60_000;
 ========================= */
 const $ = (id) => document.getElementById(id);
 
+function setText(id, value){
+  const el = $(id);
+  if(el) el.textContent = value ?? "";
+}
+
 function normalize(v){ return (v ?? "").toString().trim(); }
 function lower(v){ return normalize(v).toLowerCase(); }
 function upper(v){ return normalize(v).toUpperCase(); }
@@ -68,12 +73,12 @@ function shuffleInPlace(arr){
 ========================= */
 function setClock(){
   const d = new Date();
-  $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  setText("clock", `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`);
 }
 function setDate(){
   const d = new Date();
   const fmt = new Intl.DateTimeFormat("es-AR", { weekday:"short", day:"2-digit", month:"short" });
-  $("dateChip").textContent = fmt.format(d).replace(".", "");
+  setText("dateChip", fmt.format(d).replace(".", ""));
 }
 
 /* =========================
@@ -84,9 +89,12 @@ function setQRs(){
   const qrWapp = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(WHATSAPP_URL);
   const qrIg   = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(INSTAGRAM_URL);
 
-  $("qrMenu").src = qrMenu;
-  $("qrWapp").src = qrWapp;
-  $("qrIg").src   = qrIg;
+  const m = $("qrMenu");
+  const w = $("qrWapp");
+  const i = $("qrIg");
+  if(m) m.src = qrMenu;
+  if(w) w.src = qrWapp;
+  if(i) i.src = qrIg;
 }
 
 /* =========================
@@ -160,11 +168,11 @@ async function loadWeather(){
 
     const rainText = (rainProb == null) ? "--%" : `${Math.round(rainProb)}%`;
 
-    $("wEmoji").textContent = emoji;
-    $("wText").textContent = `${Number.isFinite(temp) ? temp : "--"}° · ${text} · Lluvia ${rainText}`;
+    setText("wEmoji", emoji);
+    setText("wText", `${Number.isFinite(temp) ? temp : "--"}° · ${text} · Lluvia ${rainText}`);
   } catch(e){
-    $("wEmoji").textContent = "⛅";
-    $("wText").textContent = `--° · Clima no disponible · Lluvia --%`;
+    setText("wEmoji", "⛅");
+    setText("wText", `--° · Clima no disponible · Lluvia --%`);
     console.error("Clima:", e);
   }
 }
@@ -258,9 +266,6 @@ function buildPromos(rows){
     const categoria = normalize(r["Categoria"]);
     const desc = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || "";
 
-    const promoRaw = normalize(r["Promo"]);
-    const promoNoteFromCol = (!isJustYesWord(promoRaw) && promoRaw.length >= 3) ? promoRaw : "";
-
     const imgName = normalize(r["Imagen"]);
     const imgSrc = imgName ? `img/${imgName}` : "";
 
@@ -282,7 +287,8 @@ function buildPromos(rows){
       oldPrice = "";
     }
 
-    const note = normalize(r["TV TITULO"]) || promoNoteFromCol || "PROMO DEL DÍA";
+    // 🔥 Nota eliminada (antes podía mostrar cosas tipo "EMPANADAS")
+    const note = ""; 
 
     return {
       nombre,
@@ -310,12 +316,14 @@ let activeLayer = "A";
 
 function runWipe(){
   const wipe = $("wipe");
+  if(!wipe) return;
   wipe.classList.remove("wipe-run");
   void wipe.offsetWidth;
   wipe.classList.add("wipe-run");
 }
 function setProgress(durationMs){
   const bar = $("progressBar");
+  if(!bar) return;
   bar.style.transition = "none";
   bar.style.width = "0%";
   void bar.offsetWidth;
@@ -324,6 +332,7 @@ function setProgress(durationMs){
 }
 function popBadge(kind){
   const b = $("offBadge");
+  if(!b) return;
   b.classList.remove("badge-pop-soft","badge-pop-hard");
   void b.offsetWidth;
   b.classList.add(kind);
@@ -339,6 +348,8 @@ function computeOff(oldPrice, mainPrice){
 function swapImage(src){
   const imgA = $("promoImgA");
   const imgB = $("promoImgB");
+  if(!imgA || !imgB) return;
+
   const next = activeLayer === "A" ? imgB : imgA;
   const current = activeLayer === "A" ? imgA : imgB;
 
@@ -355,40 +366,52 @@ function renderPromo(p){
   const media = $("promoMedia");
   const offEl = $("offBadge");
 
-  card.dataset.accent = p?.accent || "default";
+  if(card) card.dataset.accent = p?.accent || "default";
   runWipe();
 
-  $("promoTitle").textContent = p?.nombre || "SIN PROMOS";
-  $("promoDesc").textContent = p?.desc || "Escaneá el QR para ver el menú completo.";
-  $("promoPrice").textContent = p?.mainPrice || "";
-  $("promoNote").textContent = p?.note || "Cantina ADPUT";
+  setText("promoTitle", p?.nombre || "SIN PROMOS");
+
+  // 🔥 Quitado el fallback “Escaneá el QR...”
+  setText("promoDesc", p?.desc || "");
+
+  setText("promoPrice", p?.mainPrice || "");
 
   const oldEl = $("oldPrice");
-  oldEl.textContent = p?.oldPrice || "";
-  oldEl.style.visibility = (p?.oldPrice) ? "visible" : "hidden";
+  if(oldEl){
+    oldEl.textContent = p?.oldPrice || "";
+    oldEl.style.visibility = (p?.oldPrice) ? "visible" : "hidden";
+  }
 
   const off = (p?.oldPrice && p?.mainPrice) ? computeOff(p.oldPrice, p.mainPrice) : null;
-  if(off !== null){
-    $("pillText").textContent = "PROMO";
+  if(off !== null && offEl){
+    setText("pillText", "PROMO");
     offEl.textContent = `-${off}%`;
     offEl.style.display = "inline-block";
     if(off >= 30) popBadge("badge-pop-hard");
     else popBadge("badge-pop-soft");
   } else {
-    $("pillText").textContent = "PROMO";
-    offEl.style.display = "none";
-    offEl.classList.remove("badge-pop-soft","badge-pop-hard");
+    setText("pillText", "PROMO");
+    if(offEl){
+      offEl.style.display = "none";
+      offEl.classList.remove("badge-pop-soft","badge-pop-hard");
+    }
   }
 
   swapImage(p?.imgSrc || "img/logo.png");
 
-  media.classList.remove("media-enter");
-  document.body.classList.remove("text-enter");
-  $("promoPrice").classList.remove("price-punch");
-  void card.offsetWidth;
-  media.classList.add("media-enter");
-  document.body.classList.add("text-enter");
-  setTimeout(() => $("promoPrice").classList.add("price-punch"), 190);
+  if(media){
+    media.classList.remove("media-enter");
+    document.body.classList.remove("text-enter");
+    const priceEl = $("promoPrice");
+    if(priceEl) priceEl.classList.remove("price-punch");
+    void (card?.offsetWidth ?? document.body.offsetWidth);
+    media.classList.add("media-enter");
+    document.body.classList.add("text-enter");
+    setTimeout(() => {
+      const pr = $("promoPrice");
+      if(pr) pr.classList.add("price-punch");
+    }, 190);
+  }
 
   setProgress(ROTATE_MS);
 }
@@ -398,7 +421,6 @@ function startRotation(){
 
   if(!promos.length){
     renderPromo(null);
-    $("status").textContent = "Sin promos";
     return;
   }
 
@@ -413,15 +435,13 @@ function startRotation(){
 
 async function loadPromos(){
   try{
-    $("status").textContent = "Actualizando datos…";
+    // 🔥 Quitado “OK · N promos” y cualquier status visible
     const rows = await fetchSheetRows();
     promos = buildPromos(rows);
-    $("status").textContent = promos.length ? `OK · ${promos.length} promos` : "Sin promos";
     startRotation();
   } catch(err){
     console.error(err);
     promos = [];
-    $("status").textContent = "Error leyendo Google Sheets";
     startRotation();
   }
 }
