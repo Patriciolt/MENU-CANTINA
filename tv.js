@@ -49,6 +49,30 @@ function shuffleInPlace(arr){
 }
 
 /* =========================
+   ROBUST COLUMN ACCESS
+========================= */
+function keyIndexFromRow(row){
+  const map = {};
+  for(const k of Object.keys(row||{})){
+    map[String(k).trim().toLowerCase()] = k;
+  }
+  return map;
+}
+function getv(row, keyMap, ...names){
+  for(const n of names){
+    const k = keyMap[String(n).trim().toLowerCase()];
+    if(k !== undefined) return row[k];
+  }
+  return "";
+}
+function isPromoValue(v){
+  const s = normalize(v);
+  if(!s) return false;
+  if(s === "0") return false;
+  return true;
+}
+
+/* =========================
    CLOCK + DATE
 ========================= */
 function tickClock(){
@@ -123,43 +147,38 @@ async function fetchSheetRows(){
 }
 
 /* =========================
-   BUILD PROMOS (según tu sheet)
-   - Activo = sí
-   - TV ACTIVO = sí (si está vacío, se toma como sí)
+   BUILD PROMOS (robusto, según tu Sheet)
+   Condiciones:
+   - Activo = sí (si falta la columna, se asume sí)
+   - TV ACTIVO = sí (si falta/vacío, se asume sí)
    - Promo: cualquier valor no vacío y distinto de 0
 ========================= */
-function isPromoValue(v){
-  const s = normalize(v);
-  if(!s) return false;
-  if(s === "0") return false;
-  return true; // "sí" o números como 2,3, etc.
-}
-
 function buildPromos(rows){
-  const valid = rows.filter(r => {
-    const activo = isYes(r["Activo"]);
-    const tvCell = normalize(r["TV ACTIVO"]);
-    const tvActivo = tvCell === "" ? true : isYes(tvCell);
-    return activo && tvActivo && normalize(r["Producto"]);
-  });
+  const out = [];
 
-  const promos = valid.filter(r => isPromoValue(r["Promo"]));
+  for(const row of rows){
+    const km = keyIndexFromRow(row);
 
-  promos.sort((a,b) => {
-    const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
-    const ob = toNumber(b["TV ORDEN"], toNumber(b["Orden"], 999999));
-    return oa - ob;
-  });
+    const activoCell = getv(row, km, "Activo");
+    const tvCell     = getv(row, km, "TV ACTIVO", "TV_ACTIVO");
+    const promoCell  = getv(row, km, "Promo", "PROMO");
+    const producto   = getv(row, km, "Producto", "PRODUCTO");
+    if(!normalize(producto)) continue;
 
-  const out = promos.map(r => {
-    const title = normalize(r["TV TITULO"]) || normalize(r["Producto"]);
-    const desc  = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || "";
-    const img   = normalize(r["Imagen"]);
+    const activo = normalize(activoCell)==="" ? true : isYes(activoCell);
+    const tvOk   = normalize(tvCell)===""     ? true : isYes(tvCell);
+    const promo  = isPromoValue(promoCell);
+
+    if(!(activo && tvOk && promo)) continue;
+
+    const title = normalize(getv(row, km, "TV TITULO", "TV_TITULO")) || normalize(producto);
+    const desc  = normalize(getv(row, km, "TV DESCRIPCION", "TV_DESCRIPCION", "Descripcion", "Descripción")) || "";
+    const img   = normalize(getv(row, km, "Imagen", "IMAGEN"));
     const imgSrc = img ? `img/${img}` : "img/logo.png";
 
-    const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
-    const precioBase = money(r["Precio"]);
-    const precioPromo = money(r["Precio Promo"]);
+    const tvPrecio = normalize(getv(row, km, "TV PRECIO TEXTO", "TV_PRECIO_TEXTO"));
+    const precioBase = money(getv(row, km, "Precio", "PRECIO"));
+    const precioPromo = money(getv(row, km, "Precio Promo", "PrecioPromo", "PRECIO PROMO", "PRECIO_PROMO"));
 
     let mainPrice = "";
     let oldPrice = "";
@@ -175,9 +194,11 @@ function buildPromos(rows){
       oldPrice = "";
     }
 
-    return { title, desc, imgSrc, mainPrice, oldPrice };
-  });
+    const ord = toNumber(getv(row, km, "TV ORDEN", "TV_ORDEN", "Orden"), 999999);
+    out.push({ title, desc, imgSrc, mainPrice, oldPrice, ord });
+  }
 
+  out.sort((a,b)=>a.ord-b.ord);
   if(SHUFFLE) shuffleInPlace(out);
   return out;
 }
@@ -261,12 +282,32 @@ function startRotation(){
 async function refresh(){
   try{
     const rows = await fetchSheetRows();
-    promos = buildPromos(rows);
+    const built = buildPromos(rows);
+
+    if(built.length){
+      promos = built;
+      try{ localStorage.setItem("tv_promos_cache", JSON.stringify(promos)); }catch(e){}
+    } else {
+      // si por alguna razón el filtro queda vacío, usamos cache
+      try{
+        const cached = JSON.parse(localStorage.getItem("tv_promos_cache") || "[]");
+        promos = Array.isArray(cached) && cached.length ? cached : [];
+      }catch(e){
+        promos = [];
+      }
+    }
+
     startRotation();
   } catch(err){
     console.error("Error leyendo Google Sheets", err);
-    promos = [];
-    startRotation(); // mostrará SIN PROMOS
+    // fallback a cache
+    try{
+      const cached = JSON.parse(localStorage.getItem("tv_promos_cache") || "[]");
+      promos = Array.isArray(cached) && cached.length ? cached : [];
+    }catch(e){
+      promos = [];
+    }
+    startRotation();
   }
 }
 
