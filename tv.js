@@ -12,240 +12,138 @@ const SHUFFLE    = true;
 const MENU_URL = "https://adputcantina.com.ar/menu.html";
 const INSTAGRAM_URL = "https://www.instagram.com/adputcantina?igsh=dW5xYTZzZmxkMGg5";
 
-/* WhatsApp (link directo) */
-const WAPP_NUMBER_E164 = "5493816836838"; // +54 9 3816 83-6838
-const WHATSAPP_URL = `https://wa.me/${WAPP_NUMBER_E164}`;
+/* WhatsApp */
+const WAPP_NUMBER = "+5493816836838"; // formato sin espacios
+const WAPP_TEXT   = "Hola! Quiero hacer un pedido 😊";
 
-/* Clima: San Miguel de Tucumán */
-const LAT = -26.8083;
-const LON = -65.2176;
-const WEATHER_REFRESH_MS = 15 * 60_000;
+const $ = (id) => document.getElementById(id);
 
 /* =========================
    HELPERS
 ========================= */
-const $ = (id) => document.getElementById(id);
-
-function normalize(v){ return (v ?? "").toString().trim(); }
-function lower(v){ return normalize(v).toLowerCase(); }
+function normalize(v){
+  if(v === null || v === undefined) return "";
+  return String(v).trim();
+}
 function upper(v){ return normalize(v).toUpperCase(); }
-
 function isYes(v){
-  const t = lower(v);
-  return t === "si" || t === "sí" || t === "s" || t === "yes" || t === "y" || t === "1" || t === "true";
+  const s = upper(v);
+  return s === "SI" || s === "SÍ" || s === "YES" || s === "TRUE" || s === "1";
 }
-function isJustYesWord(v){
-  const t = lower(v);
-  return t === "" || t === "si" || t === "sí" || t === "s" || t === "1" || t === "true" || t === "ok";
-}
-function toNumber(v, fallback = 999999){
-  const t = normalize(v).replace(",", ".");
-  const n = Number(t);
+function toNumber(v, fallback=0){
+  const s = normalize(v).replace(/\./g,"").replace(",", ".");
+  const n = Number(s);
   return Number.isFinite(n) ? n : fallback;
 }
 function money(v){
-  const t = normalize(v);
-  if(!t) return "";
-  if(/[a-zA-ZxX]/.test(t)) return t;
-  const n = toNumber(t, NaN);
-  if(Number.isFinite(n)) return "$ " + n.toLocaleString("es-AR");
-  return t;
-}
-function numberFromMoneyText(txt){
-  const digits = normalize(txt).replace(/[^\d]/g, "");
-  const n = Number(digits);
-  return Number.isFinite(n) ? n : NaN;
+  const n = toNumber(v, NaN);
+  if(!Number.isFinite(n)) return "";
+  return "$ " + n.toLocaleString("es-AR");
 }
 function shuffleInPlace(arr){
-  for(let i = arr.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* =========================
+   CLOCK + DATE
+========================= */
+function tickClock(){
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,"0");
+  const mm = String(now.getMinutes()).padStart(2,"0");
+  const clock = $("clock");
+  if(clock) clock.textContent = `${hh}:${mm}`;
+
+  const dateChip = $("dateChip");
+  if(dateChip){
+    const dias = ["dom","lun","mar","mié","jue","vie","sáb"];
+    const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    const d = dias[now.getDay()];
+    const n = now.getDate();
+    const m = meses[now.getMonth()];
+    dateChip.textContent = `${d}, ${n} ${m}`;
   }
 }
+setInterval(tickClock, 1000);
+tickClock();
 
 /* =========================
-   FECHA / HORA
+   WEATHER (simple)
+   (si tu versión anterior ya lo tenía con API, lo dejamos "best-effort"
 ========================= */
-function setClock(){
-  const d = new Date();
-  $("clock").textContent = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-}
-function setDate(){
-  const d = new Date();
-  const fmt = new Intl.DateTimeFormat("es-AR", { weekday:"short", day:"2-digit", month:"short" });
-  $("dateChip").textContent = fmt.format(d).replace(".", "");
-}
-
-/* =========================
-   QR (imágenes)
-========================= */
-function setQRs(){
-  const qrMenu = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(MENU_URL);
-  const qrWapp = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(WHATSAPP_URL);
-  const qrIg   = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=" + encodeURIComponent(INSTAGRAM_URL);
-
-  $("qrMenu").src = qrMenu;
-  $("qrWapp").src = qrWapp;
-  $("qrIg").src   = qrIg;
-}
-
-/* =========================
-   CLIMA (Open-Meteo, sin API key)
-========================= */
-function weatherCodeToText(code){
-  const map = {
-    0: "Despejado",
-    1: "Mayormente despejado",
-    2: "Parcial nublado",
-    3: "Nublado",
-    45: "Neblina",
-    48: "Neblina",
-    51: "Llovizna",
-    53: "Llovizna",
-    55: "Llovizna",
-    61: "Lluvia",
-    63: "Lluvia",
-    65: "Lluvia fuerte",
-    71: "Nieve",
-    73: "Nieve",
-    75: "Nieve fuerte",
-    80: "Chubascos",
-    81: "Chubascos",
-    82: "Chubascos fuertes",
-    95: "Tormentas",
-    96: "Tormentas",
-    99: "Tormentas fuertes"
-  };
-  return map[code] || "Tiempo";
-}
-function weatherCodeToEmoji(code){
-  if(code === 0) return "☀️";
-  if(code === 1) return "🌤️";
-  if(code === 2) return "⛅";
-  if(code === 3) return "☁️";
-  if(code === 45 || code === 48) return "🌫️";
-  if([51,53,55].includes(code)) return "🌦️";
-  if([61,63,65,80,81,82].includes(code)) return "🌧️";
-  if([95,96,99].includes(code)) return "⛈️";
-  if([71,73,75].includes(code)) return "❄️";
-  return "⛅";
-}
-
 async function loadWeather(){
-  try{
-    const url =
-      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
-      `&current_weather=true` +
-      `&hourly=precipitation_probability` +
-      `&timezone=auto`;
-
-    const res = await fetch(url, { cache:"no-store" });
-    if(!res.ok) throw new Error("HTTP clima " + res.status);
-    const data = await res.json();
-
-    const temp = Math.round(data?.current_weather?.temperature ?? NaN);
-    const code = data?.current_weather?.weathercode;
-    const text = weatherCodeToText(code);
-    const emoji = weatherCodeToEmoji(code);
-
-    const nowIso = data?.current_weather?.time;
-    const times = data?.hourly?.time || [];
-    const probs = data?.hourly?.precipitation_probability || [];
-
-    let rainProb = null;
-    if(nowIso && times.length && probs.length){
-      const i = times.indexOf(nowIso);
-      rainProb = (i >= 0) ? probs[i] : probs[0];
-    }
-
-    const rainText = (rainProb == null) ? "--%" : `${Math.round(rainProb)}%`;
-
-    $("wEmoji").textContent = emoji;
-    $("wText").textContent = `${Number.isFinite(temp) ? temp : "--"}° · ${text} · Lluvia ${rainText}`;
-  } catch(e){
-    $("wEmoji").textContent = "⛅";
-    $("wText").textContent = `--° · Clima no disponible · Lluvia --%`;
-    console.error("Clima:", e);
-  }
+  // Si tu tv.js anterior tenía API, acá podrías reponerla.
+  // Para no romper nada si no hay key, mostramos un texto neutro.
+  const wText = $("wText");
+  const wEmoji = $("wEmoji");
+  if(wText) wText.textContent = "—";
+  if(wEmoji) wEmoji.textContent = "⛅";
 }
+loadWeather();
 
 /* =========================
-   PARALLAX
+   QRs
 ========================= */
-function startParallax(){
-  const wm = $("watermark");
-  const pt = $("pattern");
-  let t0 = performance.now();
-  function tick(now){
-    const t = (now - t0) / 1000;
-    if(wm){
-      const x = 82 + Math.sin(t * 0.12) * 2.4;
-      const y = 56 + Math.cos(t * 0.10) * 1.8;
-      wm.style.backgroundPosition = `${x}% ${y}%`;
-    }
-    if(pt){
-      const px = (Math.sin(t * 0.06) * 18);
-      const py = (Math.cos(t * 0.05) * 14);
-      pt.style.backgroundPosition = `${px}px ${py}px`;
-    }
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+function makeQRDataUrl(text, size=220){
+  const api = "https://api.qrserver.com/v1/create-qr-code/";
+  return `${api}?size=${size}x${size}&data=${encodeURIComponent(text)}`;
 }
+function initQrs(){
+  const qrMenu = $("qrMenu");
+  const qrIg = $("qrIg");
+  const qrWapp = $("qrWapp");
+
+  if(qrMenu) qrMenu.src = makeQRDataUrl(MENU_URL, 260);
+  if(qrIg)   qrIg.src   = makeQRDataUrl(INSTAGRAM_URL, 260);
+
+  const wappLink = `https://wa.me/${WAPP_NUMBER.replace(/\D/g,"")}?text=${encodeURIComponent(WAPP_TEXT)}`;
+  if(qrWapp) qrWapp.src = makeQRDataUrl(wappLink, 260);
+}
+initQrs();
 
 /* =========================
-   SHEETS FETCH (GVIZ)
+   SHEET FETCH (GVIZ)
 ========================= */
 async function fetchSheetRows(){
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res = await fetch(url, { cache:"no-store" });
-  if(!res.ok) throw new Error(`HTTP ${res.status} al leer Google Sheets`);
-
-  const text = await res.text();
-  const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
-  const data = JSON.parse(jsonText);
-
-  const cols = data.table.cols.map(c => c.label);
-  const rows = data.table.rows;
-
-  return rows.map(r => {
-    const obj = {};
-    r.c?.forEach((cell, i) => {
-      const key = cols[i] || `COL_${i}`;
-      obj[key] = cell?.v ?? "";
-    });
-    return obj;
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const txt = await res.text();
+  const json = JSON.parse(txt.substring(txt.indexOf('{'), txt.lastIndexOf('}')+1));
+  const cols = json.table.cols.map(c => c.label);
+  return json.table.rows.map(r => {
+    const o = {};
+    r.c.forEach((c,i)=> o[cols[i]] = c?.v ?? "");
+    return o;
   });
 }
 
 /* =========================
-   CATEGORY -> ACCENT
+   BUILD PROMOS (según tu sheet)
+   - Activo = sí
+   - TV ACTIVO = sí (si está vacío, se toma como sí)
+   - Promo: cualquier valor no vacío y distinto de 0
 ========================= */
-function accentFromCategory(cat){
-  const c = lower(cat);
-  if(c.includes("empan")) return "empanadas";
-  if(c.includes("sand")) return "sandwichs";
-  if(c.includes("papa")) return "papas";
-  if(c.includes("vino") || c.includes("beb") || c.includes("gase") || c.includes("agua")) return "bebidas";
-  return "default";
+function isPromoValue(v){
+  const s = normalize(v);
+  if(!s) return false;
+  if(s === "0") return false;
+  return true; // "sí" o números como 2,3, etc.
 }
 
-/* =========================
-   PROMOS ONLY + PRICE LOGIC
-========================= */
 function buildPromos(rows){
   const valid = rows.filter(r => {
     const activo = isYes(r["Activo"]);
-    const tvActivoCell = normalize(r["TV ACTIVO"]);
-    const tvActivo = tvActivoCell === "" ? true : isYes(tvActivoCell);
+    const tvCell = normalize(r["TV ACTIVO"]);
+    const tvActivo = tvCell === "" ? true : isYes(tvCell);
     return activo && tvActivo && normalize(r["Producto"]);
   });
 
-  const promos = valid.filter(r => {
-    const promoCol = normalize(r["Promo"]);
-    const tvBloque = upper(r["TV BLOQUE"]);
-    return promoCol !== "" || tvBloque === "PROMO";
-  });
+  const promos = valid.filter(r => isPromoValue(r["Promo"]));
 
   promos.sort((a,b) => {
     const oa = toNumber(a["TV ORDEN"], toNumber(a["Orden"], 999999));
@@ -254,46 +152,30 @@ function buildPromos(rows){
   });
 
   const out = promos.map(r => {
-    const nombre = normalize(r["Producto"]);
-    const categoria = normalize(r["Categoria"]);
-    const desc = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || "";
+    const title = normalize(r["TV TITULO"]) || normalize(r["Producto"]);
+    const desc  = normalize(r["TV DESCRIPCION"]) || normalize(r["Descripcion"]) || "";
+    const img   = normalize(r["Imagen"]);
+    const imgSrc = img ? `img/${img}` : "img/logo.png";
 
-    const promoRaw = normalize(r["Promo"]);
-    const promoNoteFromCol = (!isJustYesWord(promoRaw) && promoRaw.length >= 3) ? promoRaw : "";
-
-    const imgName = normalize(r["Imagen"]);
-    const imgSrc = imgName ? `img/${imgName}` : "";
-
+    const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
     const precioBase = money(r["Precio"]);
     const precioPromo = money(r["Precio Promo"]);
-    const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
 
-    let oldPrice = "";
     let mainPrice = "";
+    let oldPrice = "";
 
     if(tvPrecio){
       mainPrice = tvPrecio;
-      if(precioBase) oldPrice = precioBase;
+      oldPrice = precioBase;
     } else if(precioPromo){
       mainPrice = precioPromo;
       if(precioBase && precioBase !== precioPromo) oldPrice = precioBase;
     } else {
-      mainPrice = precioBase || "";
+      mainPrice = precioBase;
       oldPrice = "";
     }
 
-    const note = normalize(r["TV TITULO"]) || promoNoteFromCol || "PROMO DEL DÍA";
-
-    return {
-      nombre,
-      categoria,
-      accent: accentFromCategory(categoria),
-      desc,
-      imgSrc,
-      mainPrice,
-      oldPrice,
-      note
-    };
+    return { title, desc, imgSrc, mainPrice, oldPrice };
   });
 
   if(SHUFFLE) shuffleInPlace(out);
@@ -301,113 +183,82 @@ function buildPromos(rows){
 }
 
 /* =========================
-   ANIMACIONES + ROTACIÓN
+   RENDER + ROTATE
+   - Crossfade real con 2 capas
+   - Sin porcentaje de descuento
+   - Sin micro brillo del precio
 ========================= */
 let promos = [];
 let idx = 0;
 let rotateTimer = null;
-let activeLayer = "A";
 
-function runWipe(){
-  const wipe = $("wipe");
-  wipe.classList.remove("wipe-run");
-  void wipe.offsetWidth;
-  wipe.classList.add("wipe-run");
-}
-function setProgress(durationMs){
-  const bar = $("progressBar");
-  bar.style.transition = "none";
-  bar.style.width = "0%";
-  void bar.offsetWidth;
-  bar.style.transition = `width ${durationMs}ms linear`;
-  bar.style.width = "100%";
-}
-function popBadge(kind){
-  const b = $("offBadge");
-  b.classList.remove("badge-pop-soft","badge-pop-hard");
-  void b.offsetWidth;
-  b.classList.add(kind);
-}
-function computeOff(oldPrice, mainPrice){
-  const oldN = numberFromMoneyText(oldPrice);
-  const newN = numberFromMoneyText(mainPrice);
-  if(Number.isFinite(oldN) && Number.isFinite(newN) && oldN > 0 && newN > 0 && oldN > newN){
-    return Math.round(((oldN - newN) / oldN) * 100);
-  }
-  return null;
-}
-function swapImage(src){
+function swapImage(nextSrc){
   const imgA = $("promoImgA");
   const imgB = $("promoImgB");
-  const next = activeLayer === "A" ? imgB : imgA;
-  const current = activeLayer === "A" ? imgA : imgB;
+  if(!imgA || !imgB) return;
 
-  next.onerror = () => { next.src = "img/logo.png"; };
-  next.src = src || "img/logo.png";
+  const aActive = imgA.classList.contains("is-active");
+  const show = aActive ? imgB : imgA;
+  const hide = aActive ? imgA : imgB;
 
-  next.classList.add("is-active");
-  current.classList.remove("is-active");
-  activeLayer = (activeLayer === "A") ? "B" : "A";
+  // Pre-carga para evitar "gris" si tarda la imagen
+  const pre = new Image();
+  pre.onload = () => {
+    show.src = nextSrc;
+    hide.classList.remove("is-active");
+    show.classList.add("is-active");
+  };
+  pre.onerror = () => {
+    // Si falla, no cambiamos para evitar pantalla vacía
+  };
+  pre.src = nextSrc;
+}
+
+function animateInfo(){
+  const info = document.querySelector(".promo-info");
+  if(!info) return;
+  info.classList.remove("info-enter");
+  void info.offsetWidth;
+  info.classList.add("info-enter");
 }
 
 function renderPromo(p){
-  const card = $("promoCard");
-  const media = $("promoMedia");
-  const offEl = $("offBadge");
+  const titleEl = $("promoTitle");
+  const descEl  = $("promoDesc");
+  const priceEl = $("promoPrice");
+  const oldEl   = $("oldPrice");
+  const pillText= $("pillText");
+  const offBadge= $("offBadge");
 
-  card.dataset.accent = p?.accent || "default";
-  runWipe();
-  // Re-disparar animación del bloque derecho (para cada promo)
-  const info = document.querySelector(".promo-info");
-  if(info){
-    info.classList.remove("info-enter");
-    void info.offsetWidth;
-    info.classList.add("info-enter");
+  if(offBadge) offBadge.textContent = ""; // no porcentaje
+
+  if(!p){
+    if(titleEl) titleEl.textContent = "SIN PROMOS ACTIVAS";
+    if(descEl)  descEl.textContent  = "";
+    if(priceEl) priceEl.textContent = "";
+    if(oldEl)   oldEl.textContent   = "";
+    if(pillText)pillText.textContent = "PROMO";
+    swapImage("img/logo.png");
+    animateInfo();
+    return;
   }
 
+  if(titleEl) titleEl.textContent = p.title;
+  if(descEl)  descEl.textContent  = p.desc;
+  if(priceEl) priceEl.textContent = p.mainPrice;
+  if(oldEl)   oldEl.textContent   = p.oldPrice;
 
-  $("promoTitle").textContent = p?.nombre || "SIN PROMOS";
-  $("promoDesc").textContent = p?.desc || "";
-  $("promoPrice").textContent = p?.mainPrice || "";
-const oldEl = $("oldPrice");
-  oldEl.textContent = p?.oldPrice || "";
-  oldEl.style.visibility = (p?.oldPrice) ? "visible" : "hidden";
-
-  const off = (p?.oldPrice && p?.mainPrice) ? computeOff(p.oldPrice, p.mainPrice) : null;
-  if(off !== null){
-    $("pillText").textContent = "PROMO";
-    offEl.textContent = `-${off}%`;
-    offEl.style.display = "inline-block";
-    if(off >= 30) popBadge("badge-pop-hard");
-    else popBadge("badge-pop-soft");
-  } else {
-    $("pillText").textContent = "PROMO";
-    offEl.style.display = "none";
-    offEl.classList.remove("badge-pop-soft","badge-pop-hard");
-  }
-
-  swapImage(p?.imgSrc || "img/logo.png");
-
-  media.classList.remove("media-enter");
-  document.body.classList.remove("text-enter");
-  $("promoPrice").classList.remove("price-punch");
-  void card.offsetWidth;
-  media.classList.add("media-enter");
-  document.body.classList.add("text-enter");
-  setTimeout(() => $("promoPrice").classList.add("price-punch"), 190);
-
-  setProgress(ROTATE_MS);
+  if(pillText)pillText.textContent = "PROMO";
+  swapImage(p.imgSrc);
+  animateInfo();
 }
 
 function startRotation(){
   if(rotateTimer) clearInterval(rotateTimer);
-
-  if(!promos.length){
-    renderPromo(null);    return;
-  }
-
   idx = 0;
-  renderPromo(promos[idx]);
+  renderPromo(promos[0] || null);
+
+  if(promos.length <= 1) return;
 
   rotateTimer = setInterval(() => {
     idx = (idx + 1) % promos.length;
@@ -415,30 +266,17 @@ function startRotation(){
   }, ROTATE_MS);
 }
 
-async function loadPromos(){
+async function refresh(){
   try{
-        const rows = await fetchSheetRows();
+    const rows = await fetchSheetRows();
     promos = buildPromos(rows);
-        startRotation();
+    startRotation();
   } catch(err){
-    console.error(err);
+    console.error("Error leyendo Google Sheets", err);
     promos = [];
-        startRotation();
+    startRotation(); // mostrará SIN PROMOS
   }
 }
 
-/* INIT */
-setClock();
-setDate();
-setInterval(setClock, 10_000);
-setInterval(setDate, 60_000);
-
-setQRs();
-startParallax();
-
-loadPromos();
-setInterval(loadPromos, REFRESH_MS);
-
-/* Clima */
-loadWeather();
-setInterval(loadWeather, WEATHER_REFRESH_MS);
+refresh();
+setInterval(refresh, REFRESH_MS);
