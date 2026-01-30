@@ -203,13 +203,13 @@ body{
 }
 
 .layout{
-  height:100%;
-  min-height:0;
+  flex:1;
   display:grid;
   grid-template-columns: 1fr var(--sidebarW);
   gap: 16px;
-  align-items:stretch;
+  align-items: stretch;
 }
+
 
 /* Promo card */
 .promo-card{
@@ -622,3 +622,8 @@ body{
 .promo-desc:empty{ display:none; }
 
 .promo-img{ will-change: opacity, transform; }
+
+
+/* Asegurar sidebar visible */
+.tv-sidebar{ display:flex !important; }
+.qr{ display:block !important; }
