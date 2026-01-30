@@ -203,13 +203,13 @@ body{
 }
 
 .layout{
-  flex:1;
+  height:100%;
+  min-height:0;
   display:grid;
   grid-template-columns: 1fr var(--sidebarW);
   gap: 16px;
-  align-items: stretch;
+  align-items:stretch;
 }
-
 
 /* Promo card */
 .promo-card{
@@ -567,7 +567,7 @@ body{
   from{ opacity:0; transform: translateY(12px); }
   to{ opacity:1; transform: translateY(0); }
 }
-.price-punch{ animation: pricePunch 620ms cubic-bezier(.2,.9,.2,1) both; }
+.price-punch{ animation:none !important; }
 @keyframes pricePunch{
   0%{ transform: scale(.82); opacity:0; filter: blur(1px); }
   45%{ transform: scale(1.10); opacity:1; filter: blur(0); }
@@ -588,7 +588,7 @@ body{
   .clock{ font-size:30px; }
 }
 
-@media (max-width: 700px){
+@media (max-width: 1100px){
   .layout{ grid-template-columns: 1fr; }
   .promo-card{ grid-template-columns: 1fr; }
   .header-right{ max-width: 100%; }
@@ -600,30 +600,9 @@ body{
 .promo-note{ display:none !important; }
 .promo-footer--hidden{ display:none !important; }
 
-
-/* Ocultar porcentaje de descuento (no usar) */
 #offBadge{ display:none !important; }
 
-/* =========================
-   TV PRO: distribución + animación del panel derecho
-========================= */
-.promo-info{
-  padding: 34px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap: 22px;
-}
-.promo-info.info-enter{ animation: infoEnter .48s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes infoEnter{
-  from{ opacity:0; transform: translateY(14px); }
-  to{ opacity:1; transform: translateY(0); }
-}
-.promo-desc:empty{ display:none; }
 
-.promo-img{ will-change: opacity, transform; }
-
-
-/* Asegurar sidebar visible */
+/* Asegurar QR visibles */
 .tv-sidebar{ display:flex !important; }
 .qr{ display:block !important; }
