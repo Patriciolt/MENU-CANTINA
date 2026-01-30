@@ -88,13 +88,10 @@ loadWeather();
 /* =========================
    QRs
 ========================= */
-function makeQRDataUrl(text, size=260){
-  // Google Chart QR (más estable)
-  const api = "https://chart.googleapis.com/chart";
-  const chl = encodeURIComponent(text);
-  return `${api}?cht=qr&chs=${size}x${size}&chl=${chl}`;
+function makeQRDataUrl(text, size=220){
+  const api = "https://api.qrserver.com/v1/create-qr-code/";
+  return `${api}?size=${size}x${size}&data=${encodeURIComponent(text)}`;
 }
-
 function initQrs(){
   const qrMenu = $("qrMenu");
   const qrIg = $("qrIg");
@@ -195,34 +192,26 @@ let promos = [];
 let idx = 0;
 let rotateTimer = null;
 
-function swapImage(nextSrc){
+function swapImage(src){
   const imgA = $("promoImgA");
   const imgB = $("promoImgB");
-  if(!imgA || !imgB) return;
+  const next = activeLayer === "A" ? imgB : imgA;
+  const current = activeLayer === "A" ? imgA : imgB;
 
-  const aActive = imgA.classList.contains("is-active");
-  const show = aActive ? imgB : imgA;
-  const hide = aActive ? imgA : imgB;
+  const target = src || "img/logo.png";
 
-  // Pre-carga para evitar "gris" si tarda la imagen
   const pre = new Image();
   pre.onload = () => {
-    show.src = nextSrc;
-    hide.classList.remove("is-active");
-    show.classList.add("is-active");
+    next.onerror = () => { next.src = "img/logo.png"; };
+    next.src = target;
+    next.classList.add("is-active");
+    current.classList.remove("is-active");
+    activeLayer = (activeLayer === "A") ? "B" : "A";
   };
   pre.onerror = () => {
-    // Si falla, no cambiamos para evitar pantalla vacía
+    // Si falla la imagen, mantenemos la actual y evitamos pantalla gris.
   };
-  pre.src = nextSrc;
-}
-
-function animateInfo(){
-  const info = document.querySelector(".promo-info");
-  if(!info) return;
-  info.classList.remove("info-enter");
-  void info.offsetWidth;
-  info.classList.add("info-enter");
+  pre.src = target;
 }
 
 function renderPromo(p){
