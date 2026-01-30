@@ -88,10 +88,13 @@ loadWeather();
 /* =========================
    QRs
 ========================= */
-function makeQRDataUrl(text, size=220){
-  const api = "https://api.qrserver.com/v1/create-qr-code/";
-  return `${api}?size=${size}x${size}&data=${encodeURIComponent(text)}`;
+function makeQRDataUrl(text, size=260){
+  // Google Chart QR (más estable)
+  const api = "https://chart.googleapis.com/chart";
+  const chl = encodeURIComponent(text);
+  return `${api}?cht=qr&chs=${size}x${size}&chl=${chl}`;
 }
+
 function initQrs(){
   const qrMenu = $("qrMenu");
   const qrIg = $("qrIg");
