@@ -269,16 +269,16 @@ function buildPromos(rows){
     const tvPrecio = normalize(r["TV PRECIO TEXTO"]);
 
     let oldPrice = "";
-    let mainPrice_toggle = "";
+    let mainPrice = "";
 
     if(tvPrecio){
-      mainPrice_toggle = tvPrecio;
+      mainPrice = tvPrecio;
       if(precioBase) oldPrice = precioBase;
     } else if(precioPromo){
-      mainPrice_toggle = precioPromo;
+      mainPrice = precioPromo;
       if(precioBase && precioBase !== precioPromo) oldPrice = precioBase;
     } else {
-      mainPrice_toggle = precioBase || "";
+      mainPrice = precioBase || "";
       oldPrice = "";
     }
 
@@ -290,7 +290,7 @@ function buildPromos(rows){
       accent: accentFromCategory(categoria),
       desc,
       imgSrc,
-      mainPrice: mainPrice_toggle,
+      mainPrice,
       oldPrice,
       note
     };
