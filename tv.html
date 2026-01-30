@@ -71,10 +71,13 @@
                 <div class="old-price" id="oldPrice"></div>
                 <div class="promo-price" id="promoPrice"></div>
               </div>
-              <!-- 🔥 Quitado: promo-note (ahí te aparecía "EMPANADAS") -->
+              <div class="promo-note" id="promoNote"></div>
             </div>
 
-            <!-- 🔥 Quitado: footer interno (Consultá... / OK · N promos) -->
+            <!-- Footer de estado (oculto) -->
+            <div class="promo-footer promo-footer--hidden" aria-hidden="true">
+              <div class="promo-footer-right" id="status">Actualizando...</div>
+            </div>
           </div>
 
           <div class="progress">
@@ -119,13 +122,6 @@
         </aside>
       </div>
     </section>
-
-    <footer class="tv-footer">
-      <div class="footer-left">
-        <span class="dot dot-blue"></span> adputcantina.com.ar
-      </div>
-      <!-- 🔥 Quitado: “Promos rotativas” -->
-    </footer>
   </main>
 
   <script src="tv.js"></script>
