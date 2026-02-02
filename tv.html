@@ -1,69 +1,129 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TV Promos - Cantina ADPUT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900;950&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="tv.css" />
 </head>
 <body>
-
-<header class="tv-header">
-  <div class="brand">
-    <img src="img/logo.png" alt="ADPUT" />
-    <div>
-      <h1>CANTINA ADPUT</h1>
-      <span>PROMOS EN VIVO</span>
-    </div>
+  <div class="tv-bg">
+    <div class="tv-anim-gradient" aria-hidden="true"></div>
+    <div class="tv-logo-pattern" id="pattern" aria-hidden="true"></div>
+    <div class="tv-logo-watermark" id="watermark" aria-hidden="true"></div>
+    <div class="tv-overlay" aria-hidden="true"></div>
   </div>
-  <div class="top-info">
-    <span id="dateChip"></span>
-    <span class="weather"><span id="wEmoji">⛅</span> <span id="wText">—</span></span>
-    <span id="clock"></span>
-  </div>
-</header>
 
-<main class="tv-main">
-  <section class="promo-card">
-    
-    <div class="promo-media">
-      <img id="promoImgA" class="promo-img is-active" src="img/logo.png" />
-      <img id="promoImgB" class="promo-img" src="img/logo.png" />
-      <span class="promo-pill"><span id="pillText">PROMO</span></span>
-    </div>
-
-    <div class="promo-info">
-      <h2 id="promoTitle">Cargando…</h2>
-      <p id="promoDesc"></p>
-      <div class="price-box">
-        <span id="oldPrice" class="old-price"></span>
-        <span id="promoPrice" class="promo-price"></span>
+  <main class="tv">
+    <header class="tv-header">
+      <div class="brand">
+        <img class="brand-logo" src="img/logo.png" alt="Cantina ADPUT" />
+        <div class="brand-text">
+          <div class="brand-title">CANTINA ADPUT</div>
+          <div class="brand-sub">PROMOS EN VIVO</div>
+        </div>
       </div>
-    </div>
 
-  </section>
+      <div class="header-right">
+        <div class="chip date" id="dateChip">--</div>
 
-  <aside class="tv-sidebar">
-    <div class="qr-block">
-      <h4>ESCANEÁ EL MENÚ</h4>
-      <img id="qrMenu" class="qr" />
-      <small>adputcantina.com.ar</small>
-    </div>
+        <div class="chip weather big" id="weatherChip" title="Clima (Open-Meteo)">
+          <span class="w-emoji" id="wEmoji">⛅</span>
+          <span class="w-text" id="wText">--° · -- · Lluvia --%</span>
+        </div>
 
-    <div class="qr-block">
-      <h4>PEDIDOS POR WHATSAPP</h4>
-      <img id="qrWapp" class="qr" />
-      <small>+54 9 3816 83‑6838</small>
-    </div>
+        <div class="clock" id="clock">--:--</div>
+      </div>
+    </header>
 
-    <div class="qr-block">
-      <h4>SEGUINOS EN INSTAGRAM</h4>
-      <img id="qrIg" class="qr" />
-      <small>@adputcantina</small>
-    </div>
-  </aside>
-</main>
+    <section class="tv-content">
+      <div class="layout">
+        <!-- PROMO -->
+        <div class="promo-card shimmer" id="promoCard" data-accent="default">
+          <div class="wipe" id="wipe" aria-hidden="true"></div>
 
-<script src="tv.js"></script>
+          <div class="promo-media" id="promoMedia">
+            <img id="promoImgA" class="promo-img is-active" alt="" />
+            <img id="promoImgB" class="promo-img" alt="" />
+
+            <div class="promo-media-overlay" aria-hidden="true"></div>
+            <div class="promo-media-reveal" aria-hidden="true"></div>
+
+            <div class="promo-pill" id="promoPill">
+              🔥 <span id="pillText">PROMO</span>
+              <span class="off-badge" id="offBadge" style="display:none"></span>
+            </div>
+          </div>
+
+          <div class="promo-info">
+            <div class="promo-top">
+              <div class="promo-title" id="promoTitle">Cargando promos...</div>
+              <div class="promo-desc" id="promoDesc"></div>
+            </div>
+
+            <div class="promo-price-row">
+              <div class="promo-prices">
+                <div class="old-price" id="oldPrice"></div>
+                <div class="promo-price" id="promoPrice"></div>
+              </div>
+              <div class="promo-note" id="promoNote"></div>
+            </div>
+
+            <!-- Footer de estado (oculto) -->
+            <div class="promo-footer promo-footer--hidden" aria-hidden="true">
+              <div class="promo-footer-right" id="status">Actualizando...</div>
+            </div>
+          </div>
+
+          <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR TV: SOLO QRs (SIN TARJETAS) -->
+        <aside class="tv-sidebar">
+          <!-- QR Menú -->
+          <div class="qr-block qr-block--menu">
+            <div class="qr-head">
+              <img class="qr-app-ico" src="img/logo.png" alt="" />
+              <div class="qr-title qr-title--big">ESCANEÁ EL MENÚ</div>
+            </div>
+
+            <img id="qrMenu" class="qr" alt="QR Menú" />
+            <div class="qr-sub">adputcantina.com.ar</div>
+          </div>
+
+          <!-- QR WhatsApp -->
+          <div class="qr-block">
+            <div class="qr-head">
+              <img class="qr-app-ico" src="img/icono%20wapp.png" alt="" />
+              <div class="qr-title">PEDIDOS POR WHATSAPP</div>
+            </div>
+
+            <img id="qrWapp" class="qr" alt="QR WhatsApp" />
+            <div class="qr-sub" id="wappLine">+54 9 3816 83-6838</div>
+          </div>
+
+          <!-- QR Instagram -->
+          <div class="qr-block">
+            <div class="qr-head">
+              <img class="qr-app-ico" src="img/icono%20inst.png" alt="" />
+              <div class="qr-title">SEGUINOS EN INSTAGRAM</div>
+            </div>
+
+            <img id="qrIg" class="qr" alt="QR Instagram" />
+            <div class="qr-sub">@adputcantina</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="tv.js"></script>
 </body>
 </html>
