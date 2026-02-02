@@ -396,7 +396,7 @@ body{
 .promo-price-row{
   display:flex;
   align-items:flex-end;
-  justify-content:space-between;
+  justify-content:flex-start;
   gap:16px;
   padding-top: 8px;
 }
@@ -610,3 +610,9 @@ body{
   .promo-card{ grid-template-columns: 1fr; }
   .header-right{ max-width: 100%; }
 }
+
+/* =========================
+   AJUSTES: ocultar textos extra en TV
+========================= */
+.promo-note{ display:none !important; }
+.promo-footer--hidden{ display:none !important; }
