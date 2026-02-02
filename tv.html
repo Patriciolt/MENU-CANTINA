@@ -125,5 +125,20 @@
 </main>
 
   <script src="tv.js"></script>
+
+<script>
+  setTimeout(function(){
+    if(!window.__TV_JS_LOADED__){
+      var s=document.getElementById("status");
+      if(s){
+        s.textContent="⚠️ No se cargó tv.js. Tenés que tener tv.html, tv.css y tv.js en la MISMA carpeta (mismos nombres).";
+        s.style.opacity=1;
+      }
+      var t=document.getElementById("promoTitle");
+      if(t) t.textContent="FALTA tv.js";
+    }
+  }, 1500);
+</script>
+
 </body>
 </html>
