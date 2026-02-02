@@ -359,9 +359,9 @@ function renderPromo(p){
   runWipe();
 
   $("promoTitle").textContent = p?.nombre || "SIN PROMOS";
-  $("promoDesc").textContent = p?.desc || "Escaneá el QR para ver el menú completo.";
+  $("promoDesc").textContent = p?.desc || "";
   $("promoPrice").textContent = p?.mainPrice || "";
-  $("promoNote").textContent = p?.note || "Cantina ADPUT";
+  $("promoNote").textContent = "";
 
   const oldEl = $("oldPrice");
   oldEl.textContent = p?.oldPrice || "";
