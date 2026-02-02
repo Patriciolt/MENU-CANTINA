@@ -74,8 +74,8 @@
               <div class="promo-note" id="promoNote"></div>
             </div>
 
-            <!-- Footer de estado (oculto) -->
-            <div class="promo-footer promo-footer--hidden" aria-hidden="true">
+            <div class="promo-footer">
+              <div class="promo-footer-left">📌 Consultá por promos en el mostrador</div>
               <div class="promo-footer-right" id="status">Actualizando...</div>
             </div>
           </div>
@@ -122,23 +122,17 @@
         </aside>
       </div>
     </section>
-</main>
+
+    <footer class="tv-footer">
+      <div class="footer-left">
+        <span class="dot dot-blue"></span> adputcantina.com.ar
+      </div>
+      <div class="footer-right">
+        <span class="dot dot-red"></span> Promos rotativas
+      </div>
+    </footer>
+  </main>
 
   <script src="tv.js"></script>
-
-<script>
-  setTimeout(function(){
-    if(!window.__TV_JS_LOADED__){
-      var s=document.getElementById("status");
-      if(s){
-        s.textContent="⚠️ No se cargó tv.js. Tenés que tener tv.html, tv.css y tv.js en la MISMA carpeta (mismos nombres).";
-        s.style.opacity=1;
-      }
-      var t=document.getElementById("promoTitle");
-      if(t) t.textContent="FALTA tv.js";
-    }
-  }, 1500);
-</script>
-
 </body>
 </html>
