@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TV Promos - Cantina ADPUT</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="tv.css" />
+</head>
+<body>
+  <div class="tv-bg">
+    <div class="tv-anim-gradient"></div>
+    <div class="tv-logo-pattern" aria-hidden="true"></div>
+    <div class="tv-logo-watermark" id="watermark" aria-hidden="true"></div>
+  </div>
+
+  <div class="tv-wrap">
+    <!-- Header -->
+    <header class="tv-header">
+      <div class="brand">
+        <img class="brand-logo" src="img/logo.png" alt="Cantina ADPUT" />
+        <div class="brand-text">
+          <div class="brand-title">CANTINA ADPUT</div>
+          <div class="brand-sub">PROMOS EN VIVO</div>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="pill" id="pill-date">--</div>
+        <div class="pill" id="pill-weather">--</div>
+        <div class="pill time" id="pill-time">--:--</div>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="tv-main">
+      <section class="tv-content">
+        <div class="promo-card" id="promoCard">
+          <!-- Badges -->
+          <div class="badge-row">
+            <div class="badge promo" id="badgePromo">🔥 PROMO</div>
+          </div>
+
+          <!-- Left: photo -->
+          <div class="promo-photo">
+            <img id="promoImage" alt="Producto" />
+            <div class="progress" aria-hidden="true"><div class="bar" id="progressBar"></div></div>
+          </div>
+
+          <!-- Right: info -->
+          <div class="promo-info">
+            <div class="title" id="promoTitle">Cargando promos…</div>
+            <div class="subtitle" id="promoSubtitle"></div>
+
+            <div class="price-block">
+              <div class="price-old" id="priceOld"></div>
+              <div class="price-now" id="priceNow"></div>
+            </div>
+
+            <div class="promo-foot">
+              <div class="foot-left" id="footLeft">📌 Consultá por promos en el mostrador</div>
+            </div>
+          </div>
+
+          <!-- CTA: MENÚ (slide full card) -->
+          <div class="cta-slide" id="menuSlide" aria-hidden="true">
+            <div class="cta-panel">
+              <div class="cta-left">
+                <div class="cta-chip"><img class="cta-chip-ico" src="img/icono_inst.png" alt="" /> MENÚ DIGITAL</div>
+                <div class="cta-title">ESCANEÁ EL<br/>MENÚ</div>
+                <div class="cta-text">Abrí el menú completo en tu celu y mirá promos, precios y novedades.</div>
+                <div class="cta-link">adputcantina.com.ar/menu.html</div>
+              </div>
+
+              <div class="cta-right">
+                <div class="cta-qrbox">
+                  <div class="cta-qrhead">QR MENÚ <span>• rápido</span></div>
+                  <img id="qrMenuBig" class="cta-qr" alt="QR Menú" />
+                  <div class="cta-handle">@adputcantina</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA: WHATSAPP -->
+          <div class="cta-slide" id="wappSlide" aria-hidden="true">
+            <div class="cta-panel cta-panel--wapp">
+              <div class="cta-left">
+                <div class="cta-chip"><img class="cta-chip-ico" src="img/icono_wapp.png" alt="" /> PEDIDOS</div>
+                <div class="cta-title">PEDÍ POR<br/>WHATSAPP</div>
+                <div class="cta-text">Escaneá y escribinos para hacer tu pedido al toque.</div>
+                <div class="cta-link">+54 9 3816 83-6838</div>
+              </div>
+
+              <div class="cta-right">
+                <div class="cta-qrbox">
+                  <div class="cta-qrhead">QR WhatsApp <span>• directo</span></div>
+                  <img id="qrWappBig" class="cta-qr" alt="QR WhatsApp" />
+                  <div class="cta-handle">wa.me/5493816836838</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA: INSTAGRAM -->
+          <div class="cta-slide" id="igSlide" aria-hidden="true">
+            <div class="cta-panel cta-panel--ig">
+              <div class="cta-left">
+                <div class="cta-chip"><img class="cta-chip-ico" src="img/icono_inst.png" alt="" /> SEGUINOS</div>
+                <div class="cta-title">SEGUINOS EN<br/>INSTAGRAM</div>
+                <div class="cta-text">Novedades, promos y sorteos. Seguí la cuenta para no perderte nada.</div>
+                <div class="cta-link">@adputcantina</div>
+              </div>
+
+              <div class="cta-right">
+                <div class="cta-qrbox">
+                  <div class="cta-qrhead">QR Instagram <span>• seguir</span></div>
+                  <img id="qrIgBig" class="cta-qr" alt="QR Instagram" />
+                  <div class="cta-handle">instagram.com/adputcantina</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+
+    <footer class="tv-footer">
+      <div class="dot left">●</div>
+      <div class="foot-domain">adputcantina.com.ar</div>
+      <div class="dot right">●</div>
+      <div class="foot-note">Promos rotativas</div>
+    </footer>
+  </div>
+
+  <script src="tv.js"></script>
+</body>
+</html>
